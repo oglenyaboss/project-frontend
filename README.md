@@ -1,36 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Project Frontend
 
-## Getting Started
+Современное Next.js приложение с архитектурой **Feature-Sliced Design (FSD)**.
 
-First, run the development server:
+## 🏗️ Архитектура
+
+Проект построен на базе методологии **Feature-Sliced Design** - архитектурного подхода для масштабируемых фронтенд приложений.
+
+```
+src/
+├── app/          # Pages & routing (Next.js App Router)
+├── widgets/      # Composite UI blocks
+├── features/     # User interactions & features
+├── entities/     # Business entities
+└── shared/       # Reusable code (UI, utils, hooks)
+```
+
+📖 Подробнее об архитектуре: [ARCHITECTURE.md](./ARCHITECTURE.md)
+
+## 🚀 Быстрый старт
+
+### Установка зависимостей
+
+```bash
+npm install
+```
+
+### Запуск dev сервера
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000) для просмотра.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Сборка проекта
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+### Запуск production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Вы можете начать редактировать страницы в `src/app/page.tsx`. Изменения применяются автоматически.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📚 Документация
 
-## Deploy on Vercel
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Визуальные схемы архитектуры и правила
+- [FSD-STRUCTURE.md](./FSD-STRUCTURE.md) - Детальное описание структуры проекта
+- [MIGRATION-REPORT.md](./MIGRATION-REPORT.md) - Отчёт о миграции на FSD
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Стек технологий
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 15** - React фреймворк с App Router
+- **TypeScript** - Статическая типизация
+- **Tailwind CSS** - Utility-first CSS фреймворк
+- **Radix UI** - Headless UI компоненты
+- **shadcn/ui** - Коллекция переиспользуемых компонентов
+- **Feature-Sliced Design** - Архитектурная методология
+
+## 📁 Структура импортов
+
+```typescript
+// Shared layer (доступен везде)
+import { Button, Input, Dialog } from "@/shared/ui";
+import { cn } from "@/shared/lib";
+import { useIsMobile } from "@/shared/hooks";
+
+// Features (функциональность)
+import { ChatMessage } from "@/features/chat-message";
+import { UserDropdown } from "@/features/user-dropdown";
+
+// Widgets (композитные блоки)
+import { Chat } from "@/widgets/chat";
+import { AppSidebar } from "@/widgets/app-sidebar";
+```
+
+## 🎯 Основные концепции FSD
+
+### Слои (Layers)
+
+Каждый слой имеет свою зону ответственности:
+
+- **app** - инициализация, роутинг, провайдеры
+- **widgets** - большие композитные блоки
+- **features** - конкретные пользовательские действия
+- **entities** - бизнес-сущности
+- **shared** - переиспользуемый код
+
+### Правила
+
+1. Верхние слои могут импортировать только из нижних
+2. Слои одного уровня не могут импортировать друг друга
+3. Каждый модуль имеет Public API через `index.ts`
+
+## 🔄 Добавление нового функционала
+
+### Новая feature
+
+```bash
+mkdir -p src/features/my-feature/ui
+touch src/features/my-feature/ui/my-feature.tsx
+touch src/features/my-feature/index.ts
+```
+
+### Новый widget
+
+```bash
+mkdir -p src/widgets/my-widget/ui
+touch src/widgets/my-widget/ui/my-widget.tsx
+touch src/widgets/my-widget/index.ts
+```
+
+## 🎨 UI компоненты
+
+Все базовые UI компоненты находятся в `src/shared/ui` и построены на базе:
+
+- **Radix UI** - доступные headless компоненты
+- **Tailwind CSS** - кастомизируемые стили
+- **shadcn/ui** - готовые паттерны
+
+## 📦 Скрипты
+
+```bash
+npm run dev        # Запуск development сервера с Turbopack
+npm run build      # Production сборка
+npm run start      # Запуск production сервера
+npm run lint       # ESLint проверка
+```
+
+## 🔗 Полезные ссылки
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Feature-Sliced Design](https://feature-sliced.design/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Radix UI](https://www.radix-ui.com/)
+
+## 📄 Лицензия
+
+Этот проект создан с использованием [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
