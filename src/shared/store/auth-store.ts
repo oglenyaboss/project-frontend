@@ -23,7 +23,7 @@ interface AuthState {
 
 /**
  * Zustand store для управления состоянием авторизации
- * 
+ *
  * Использует middleware persist для сохранения состояния в localStorage
  * (только isAuthenticated, user сохраняется для UX)
  */

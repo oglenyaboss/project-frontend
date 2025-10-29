@@ -441,7 +441,8 @@ export function Counter() {
 import { useAuthStore } from "@/shared/store";
 
 // В компоненте
-const { user, isAuthenticated, login, logout, isLoading, error } = useAuthStore();
+const { user, isAuthenticated, login, logout, isLoading, error } =
+  useAuthStore();
 
 // Авторизация
 await login({ email: "test@test.com", password: "123456" });
@@ -467,12 +468,14 @@ if (isAuthenticated) {
 #### Когда использовать Zustand vs React Context
 
 **Zustand:**
+
 - Глобальное состояние (авторизация, корзина, настройки)
 - Нужна персистентность (localStorage)
 - Много подписчиков на состояние
 - Частые обновления состояния
 
 **React Context:**
+
 - Локальное состояние дерева компонентов
 - Провайдеры (theme, i18n)
 - Редкие обновления

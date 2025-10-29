@@ -44,6 +44,7 @@ src/
 Авторизация пользователя.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -52,6 +53,7 @@ src/
 ```
 
 **Response (Success):**
+
 ```json
 {
   "data": {
@@ -66,6 +68,7 @@ src/
 ```
 
 **Response (Error):**
+
 ```json
 {
   "error": {
@@ -75,6 +78,7 @@ src/
 ```
 
 **Cookies:**
+
 - Устанавливает `auth_token` httpOnly cookie с JWT токеном
 
 ---
@@ -84,6 +88,7 @@ src/
 Выход из системы.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -93,6 +98,7 @@ src/
 ```
 
 **Cookies:**
+
 - Удаляет `auth_token` cookie
 
 ---
@@ -102,9 +108,11 @@ src/
 Получение данных текущего пользователя.
 
 **Headers:**
+
 - Использует `auth_token` cookie автоматически
 
 **Response (Success):**
+
 ```json
 {
   "data": {
@@ -116,6 +124,7 @@ src/
 ```
 
 **Response (Unauthorized):**
+
 ```json
 {
   "error": {
@@ -142,7 +151,7 @@ function MyComponent() {
     try {
       await login({
         email: "user@example.com",
-        password: "password123"
+        password: "password123",
       });
       // Успешная авторизация
       router.push("/dashboard");
@@ -183,7 +192,7 @@ function MyComponent() {
 const response = await fetch("/api/auth/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, password })
+  body: JSON.stringify({ email, password }),
 });
 
 const result = await response.json();
@@ -244,16 +253,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get("auth_token")?.value;
-  
-  const response = await fetch(
-    `${process.env.BACKEND_API_URL}/users`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  
+
+  const response = await fetch(`${process.env.BACKEND_API_URL}/users`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   const data = await response.json();
   return NextResponse.json({ data });
 }

@@ -94,7 +94,7 @@ function GoodComponent() {
 function BestComponent() {
   const count = useCounterStore((state) => state.count);
   const increment = useCounterStore((state) => state.increment);
-  
+
   return (
     <div>
       {count}
@@ -111,7 +111,7 @@ interface TodoState {
   todos: Todo[];
   isLoading: boolean;
   error: string | null;
-  
+
   fetchTodos: () => Promise<void>;
   addTodo: (todo: Todo) => Promise<void>;
 }
@@ -123,39 +123,39 @@ export const useTodoStore = create<TodoState>((set) => ({
 
   fetchTodos: async () => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await fetch("/api/todos");
       const data = await response.json();
-      
+
       set({ todos: data, isLoading: false });
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : "Error",
-        isLoading: false 
+        isLoading: false,
       });
     }
   },
 
   addTodo: async (todo) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await fetch("/api/todos", {
         method: "POST",
         body: JSON.stringify(todo),
       });
-      
+
       const newTodo = await response.json();
-      
+
       set((state) => ({
         todos: [...state.todos, newTodo],
         isLoading: false,
       }));
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error.message : "Error",
-        isLoading: false 
+        isLoading: false,
       });
     }
   },
@@ -180,14 +180,14 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       theme: "light",
       language: "ru",
-      
+
       setTheme: (theme) => set({ theme }),
       setLanguage: (language) => set({ language }),
     }),
     {
       name: "settings-storage", // ключ в localStorage
       storage: createJSONStorage(() => localStorage),
-      
+
       // Опционально: выбираем, что сохранять
       partialize: (state) => ({
         theme: state.theme,
@@ -227,16 +227,17 @@ export const useUserStore = create<UserState>()(
         theme: "light",
       },
     },
-    
+
     // С immer можно мутировать напрямую
     updateName: (name) =>
       set((state) => {
         state.profile.name = name;
       }),
-    
+
     toggleNotifications: () =>
       set((state) => {
-        state.profile.settings.notifications = !state.profile.settings.notifications;
+        state.profile.settings.notifications =
+          !state.profile.settings.notifications;
       }),
   }))
 );
@@ -318,7 +319,7 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           await fetch("/api/auth/logout", { method: "POST" });
-          
+
           set({
             user: null,
             isAuthenticated: false,
@@ -427,7 +428,7 @@ interface UIState {
   theme: "light" | "dark" | "system";
   sidebarOpen: boolean;
   sidebarCollapsed: boolean;
-  
+
   setTheme: (theme: "light" | "dark" | "system") => void;
   toggleSidebar: () => void;
   toggleSidebarCollapse: () => void;
@@ -441,7 +442,8 @@ export const useUIStore = create<UIState>()(
       sidebarCollapsed: false,
 
       setTheme: (theme) => set({ theme }),
-      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      toggleSidebar: () =>
+        set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       toggleSidebarCollapse: () =>
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
     }),
@@ -506,7 +508,7 @@ interface State {
 
 // ❌ Неправильно — существительные
 interface State {
-  users: () => void;        // непонятно
+  users: () => void; // непонятно
   user: (user: User) => void;
 }
 ```

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // 🎭 MOCK: Временная заглушка вместо реального бэкенда
     // TODO: Заменить на реальный запрос к бэкенду
-    
+
     // Симулируем задержку сети
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -74,7 +74,9 @@ export async function POST(request: NextRequest) {
       {
         error: {
           message:
-            error instanceof Error ? error.message : "Внутренняя ошибка сервера",
+            error instanceof Error
+              ? error.message
+              : "Внутренняя ошибка сервера",
         },
       },
       { status: 500 }

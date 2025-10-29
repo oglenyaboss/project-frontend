@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // 🎭 MOCK: Извлекаем данные пользователя из токена
     // TODO: Заменить на реальный запрос к бэкенду
-    
+
     // Симулируем задержку сети
     await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -25,7 +25,10 @@ export async function GET(request: NextRequest) {
     const userId = token.split("_").pop();
 
     // Моковые данные пользователей
-    const mockUsers: Record<string, { id: string; email: string; name: string }> = {
+    const mockUsers: Record<
+      string,
+      { id: string; email: string; name: string }
+    > = {
       "1": { id: "1", email: "test@test.com", name: "Test User" },
       "2": { id: "2", email: "admin@admin.com", name: "Admin User" },
     };
