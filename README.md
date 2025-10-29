@@ -49,8 +49,12 @@ npm run start
 
 ## 📚 Документация
 
+- [AGENTS.md](./AGENTS.md) - **Справочник для AI-агентов** (полная документация проекта)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Визуальные схемы архитектуры и правила
 - [FSD-STRUCTURE.md](./FSD-STRUCTURE.md) - Детальное описание структуры проекта
+- [BFF.md](./BFF.md) - Backend For Frontend архитектура и API
+- [ZUSTAND.md](./ZUSTAND.md) - State Management с Zustand (примеры и best practices)
+- [EXAMPLES.md](./EXAMPLES.md) - Примеры создания features, widgets, entities
 - [MIGRATION-REPORT.md](./MIGRATION-REPORT.md) - Отчёт о миграции на FSD
 
 ## 🛠️ Стек технологий
@@ -60,6 +64,8 @@ npm run start
 - **Tailwind CSS** - Utility-first CSS фреймворк
 - **Radix UI** - Headless UI компоненты
 - **shadcn/ui** - Коллекция переиспользуемых компонентов
+- **Zustand** - State management (легковесная альтернатива Redux)
+- **react-hook-form + zod** - Управление формами и валидация
 - **Feature-Sliced Design** - Архитектурная методология
 
 ## 📁 Структура импортов
@@ -69,6 +75,7 @@ npm run start
 import { Button, Input, Dialog } from "@/shared/ui";
 import { cn } from "@/shared/lib";
 import { useIsMobile } from "@/shared/hooks";
+import { useAuthStore } from "@/shared/store"; // Zustand stores
 
 // Features (функциональность)
 import { ChatMessage } from "@/features/chat-message";

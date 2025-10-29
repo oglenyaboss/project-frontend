@@ -21,3 +21,4 @@ export * from "./skeleton";
 export * from "./slider";
 export * from "./textarea";
 export * from "./tooltip";
+export * from "./form";
