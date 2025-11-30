@@ -185,9 +185,14 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
+  }
+
+  /* Container with consistent padding */
+  .container {
+    @apply mx-auto w-full max-w-7xl;
   }
 
   /* Premium Typography */

@@ -99,21 +99,25 @@ export function UserDropdown() {
             <span>Дашборд</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
-          <RiUserLine
-            size={18}
-            className="text-muted-foreground"
-            aria-hidden="true"
-          />
-          <span>Профиль</span>
+        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg" asChild>
+          <Link href="/profile">
+            <RiUserLine
+              size={18}
+              className="text-muted-foreground"
+              aria-hidden="true"
+            />
+            <span>Профиль</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
-          <RiSettings4Line
-            size={18}
-            className="text-muted-foreground"
-            aria-hidden="true"
-          />
-          <span>Настройки</span>
+        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg" asChild>
+          <Link href="/profile">
+            <RiSettings4Line
+              size={18}
+              className="text-muted-foreground"
+              aria-hidden="true"
+            />
+            <span>Настройки</span>
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="my-1" />
