@@ -123,7 +123,7 @@ export default function LoginPage() {
 
           {/* Bottom Bar */}
           <div className="hidden lg:flex items-center gap-6 text-white/40 text-sm">
-            <span>© 2024 Сбер</span>
+            <span>© 2025</span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
             <span>Все права защищены</span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
