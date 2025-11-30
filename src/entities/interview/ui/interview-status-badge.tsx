@@ -23,7 +23,15 @@ const statusConfig: Record<
   InterviewStatus,
   {
     label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
+    variant:
+      | "default"
+      | "secondary"
+      | "destructive"
+      | "outline"
+      | "success"
+      | "warning"
+      | "info"
+      | "processing";
     icon: React.ComponentType<{ className?: string }>;
   }
 > = {
@@ -34,17 +42,17 @@ const statusConfig: Record<
   },
   processing: {
     label: "Обработка",
-    variant: "default",
+    variant: "processing",
     icon: Loader2,
   },
   question: {
     label: "Ожидание",
-    variant: "outline",
+    variant: "warning",
     icon: Clock,
   },
   done: {
     label: "Готово",
-    variant: "outline",
+    variant: "success",
     icon: CheckCircle2,
   },
   error: {
@@ -70,14 +78,14 @@ export function InterviewStatusBadge({
   return (
     <Badge
       variant={config.variant}
-      className={cn("flex items-center gap-1", className)}
+      className={cn("flex items-center gap-1.5", className)}
     >
       <Icon
-        className={cn("h-3 w-3", status === "processing" && "animate-spin")}
+        className={cn("h-3.5 w-3.5", status === "processing" && "animate-spin")}
       />
       {config.label}
       {status === "processing" && isConnected && (
-        <span className="ml-1 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+        <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
       )}
     </Badge>
   );
@@ -118,10 +126,10 @@ export function InterviewTypeBadge({
 
   return (
     <Badge
-      variant="outline"
-      className={cn("flex items-center gap-1", className)}
+      variant="info"
+      className={cn("flex items-center gap-1.5", className)}
     >
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3.5 w-3.5" />
       {config.label}
     </Badge>
   );

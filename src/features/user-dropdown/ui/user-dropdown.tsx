@@ -8,17 +8,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Skeleton,
 } from "@/shared/ui";
 
 import {
   RiLogoutCircleLine,
-  RiTimer2Line,
+  RiDashboardLine,
   RiUserLine,
-  RiFindReplaceLine,
-  RiPulseLine,
+  RiSettings4Line,
+  RiQuestionLine,
 } from "@remixicon/react";
 
 import { useCurrentUser } from "@/entities/user";
@@ -30,7 +30,7 @@ export function UserDropdown() {
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   if (isLoading) {
-    return <Skeleton className="size-8 rounded-full" />;
+    return <Skeleton className="size-10 rounded-xl" />;
   }
 
   if (!user) {
@@ -50,67 +50,92 @@ export function UserDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-          <Avatar className="size-8">
-            <AvatarImage src="" width={32} height={32} alt="Profile image" />
-            <AvatarFallback>{initials}</AvatarFallback>
+        <Button
+          variant="ghost"
+          className="h-auto p-1 hover:bg-primary/10 rounded-xl"
+        >
+          <Avatar className="size-9 rounded-xl">
+            <AvatarImage src="" width={36} height={36} alt="Profile image" />
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-medium">
+              {initials}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-w-64 p-2" align="end">
-        <DropdownMenuLabel className="flex min-w-0 flex-col py-0 px-1 mb-2">
-          <span className="truncate text-sm font-medium text-foreground mb-0.5">
-            {user.display_name || "Пользователь"}
-          </span>
-          <span className="truncate text-xs font-normal text-muted-foreground">
-            {user.email}
-          </span>
-        </DropdownMenuLabel>
-        <DropdownMenuItem className="gap-3 px-1" asChild>
+      <DropdownMenuContent
+        className="w-64 p-2 rounded-xl"
+        align="end"
+        sideOffset={8}
+      >
+        {/* User info header */}
+        <div className="px-2 py-3 mb-1">
+          <div className="flex items-center gap-3">
+            <Avatar className="size-12 rounded-xl">
+              <AvatarImage src="" width={48} height={48} alt="Profile image" />
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-semibold text-lg">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-foreground truncate">
+                {user.display_name || "Пользователь"}
+              </p>
+              <p className="text-sm text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <DropdownMenuSeparator className="my-1" />
+
+        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg" asChild>
           <Link href="/dashboard">
-            <RiTimer2Line
-              size={20}
-              className="text-muted-foreground/70"
+            <RiDashboardLine
+              size={18}
+              className="text-muted-foreground"
               aria-hidden="true"
             />
-            <span>Dashboard</span>
+            <span>Дашборд</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="gap-3 px-1">
+        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
           <RiUserLine
-            size={20}
-            className="text-muted-foreground/70"
+            size={18}
+            className="text-muted-foreground"
             aria-hidden="true"
           />
-          <span>Profile</span>
+          <span>Профиль</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="gap-3 px-1">
-          <RiPulseLine
-            size={20}
-            className="text-muted-foreground/70"
+        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
+          <RiSettings4Line
+            size={18}
+            className="text-muted-foreground"
             aria-hidden="true"
           />
-          <span>Changelog</span>
+          <span>Настройки</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="gap-3 px-1">
-          <RiFindReplaceLine
-            size={20}
-            className="text-muted-foreground/70"
+
+        <DropdownMenuSeparator className="my-1" />
+
+        <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
+          <RiQuestionLine
+            size={18}
+            className="text-muted-foreground"
             aria-hidden="true"
           />
-          <span>History</span>
+          <span>Помощь</span>
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator className="my-1" />
+
         <DropdownMenuItem
-          className="gap-3 px-1"
+          className="gap-3 px-3 py-2.5 rounded-lg text-destructive focus:text-destructive"
           onClick={() => logout()}
           disabled={isLoggingOut}
         >
-          <RiLogoutCircleLine
-            size={20}
-            className="text-muted-foreground/70"
-            aria-hidden="true"
-          />
-          <span>{isLoggingOut ? "Выход..." : "Log out"}</span>
+          <RiLogoutCircleLine size={18} aria-hidden="true" />
+          <span>{isLoggingOut ? "Выход..." : "Выйти"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
