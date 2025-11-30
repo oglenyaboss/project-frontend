@@ -32,6 +32,33 @@ interface RouteParams {
 }
 
 /**
+ * Клонирует FormData для повторного использования
+ * FormData нельзя переиспользовать после отправки, поэтому создаём копию
+ */
+async function cloneFormData(
+  formData: FormData
+): Promise<{ original: FormData; clone: FormData }> {
+  const original = new FormData();
+  const clone = new FormData();
+
+  for (const [key, value] of formData.entries()) {
+    if (value instanceof File) {
+      // Для файлов нужно прочитать содержимое и создать новые File объекты
+      const arrayBuffer = await value.arrayBuffer();
+      const blob1 = new Blob([arrayBuffer], { type: value.type });
+      const blob2 = new Blob([arrayBuffer], { type: value.type });
+      original.append(key, new File([blob1], value.name, { type: value.type }));
+      clone.append(key, new File([blob2], value.name, { type: value.type }));
+    } else {
+      original.append(key, value);
+      clone.append(key, value);
+    }
+  }
+
+  return { original, clone };
+}
+
+/**
  * BFF API Route для загрузки интервью
  * POST /api/interviews/projects/:projectId/upload
  *
@@ -51,8 +78,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Получаем FormData из запроса
-    const formData = await request.formData();
+    // Получаем FormData и клонируем для возможного retry
+    const rawFormData = await request.formData();
+    const { original: formData, clone: formDataClone } = await cloneFormData(
+      rawFormData
+    );
 
     // Создаём headers без Content-Type (браузер сам добавит с boundary)
     const headers: HeadersInit = {};
@@ -87,7 +117,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           {
             method: "POST",
             headers,
-            body: formData,
+            body: formDataClone, // Используем клон для retry
           }
         );
       }

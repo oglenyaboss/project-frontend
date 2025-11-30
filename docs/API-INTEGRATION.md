@@ -988,18 +988,18 @@ export default function RegisterPage() {
 
 ### Чеклист UI интеграции
 
-- [ ] Создать `src/middleware.ts`
-- [ ] Установить `@hookform/resolvers`
-- [ ] Обновить `src/app/login/page.tsx`
-- [ ] Обновить `src/features/user-dropdown/ui/user-dropdown.tsx`
-- [ ] Создать `src/entities/project/ui/project-card.tsx`
-- [ ] Обновить `src/app/dashboard/page.tsx`
-- [ ] Создать `src/app/projects/[id]/page.tsx`
-- [ ] Создать `src/entities/interview/ui/interview-card.tsx`
-- [ ] Создать `src/entities/interview/ui/interview-status-badge.tsx`
-- [ ] Установить sonner: `npx shadcn@latest add sonner`
-- [ ] Добавить Toaster в layout
-- [ ] Создать `src/app/register/page.tsx`
+- [x] Создать `src/middleware.ts`
+- [x] Установить `@hookform/resolvers`
+- [x] Обновить `src/app/login/page.tsx`
+- [x] Обновить `src/features/user-dropdown/ui/user-dropdown.tsx`
+- [x] Создать `src/entities/project/ui/project-card.tsx`
+- [x] Обновить `src/app/dashboard/page.tsx`
+- [x] Создать `src/app/projects/[id]/page.tsx`
+- [x] Создать `src/entities/interview/ui/interview-card.tsx`
+- [x] Создать `src/entities/interview/ui/interview-status-badge.tsx`
+- [x] Установить sonner: `npx shadcn@latest add sonner`
+- [x] Добавить Toaster в layout
+- [x] Создать `src/app/register/page.tsx`
 - [ ] Обновить AGENTS.md с новыми entities
 
 ---

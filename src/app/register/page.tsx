@@ -14,31 +14,32 @@ import {
   FormMessage,
   Input,
 } from "@/shared/ui";
-import { loginSchema, type LoginRequest } from "@/shared/lib/schemas";
-import { useLogin } from "@/features/auth";
+import { registerSchema, type RegisterRequest } from "@/shared/lib/schemas";
+import { useRegister } from "@/features/auth";
 
-export default function LoginPage() {
-  const { mutate: login, isPending, error } = useLogin();
+export default function RegisterPage() {
+  const { mutate: register, isPending, error } = useRegister();
 
-  const form = useForm<LoginRequest>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterRequest>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
+      display_name: "",
     },
   });
 
-  function onSubmit(values: LoginRequest) {
-    login(values);
+  function onSubmit(values: RegisterRequest) {
+    register(values);
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Вход</h1>
+          <h1 className="text-3xl font-bold">Регистрация</h1>
           <p className="text-muted-foreground">
-            Введите ваш email и пароль для входа
+            Создайте аккаунт для начала работы
           </p>
         </div>
 
@@ -50,9 +51,23 @@ export default function LoginPage() {
           >
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error.message || "Ошибка авторизации"}
+                {error.message || "Ошибка регистрации"}
               </div>
             )}
+
+            <FormField
+              control={form.control}
+              name="display_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Имя</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Иван Иванов" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -79,7 +94,7 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Пароль</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••" {...field} />
+                    <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -87,15 +102,15 @@ export default function LoginPage() {
             />
 
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Вход..." : "Войти"}
+              {isPending ? "Регистрация..." : "Зарегистрироваться"}
             </Button>
           </form>
         </Form>
 
         <div className="text-center text-sm">
-          <span className="text-muted-foreground">Нет аккаунта? </span>
-          <Link href="/register" className="underline hover:text-primary">
-            Зарегистрироваться
+          <span className="text-muted-foreground">Уже есть аккаунт? </span>
+          <Link href="/login" className="underline hover:text-primary">
+            Войти
           </Link>
         </div>
       </div>

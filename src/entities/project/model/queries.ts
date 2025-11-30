@@ -3,6 +3,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { queryKeys, type PaginationParams } from "@/shared/api";
 import type {
@@ -63,6 +64,10 @@ export function useCreateProject() {
     onSuccess: () => {
       // Инвалидируем список проектов
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() });
+      toast.success("Проект создан");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка создания проекта");
     },
   });
 }
@@ -112,6 +117,11 @@ export function useUpdateProject() {
           context.previousProject
         );
       }
+      toast.error(err.message || "Ошибка обновления проекта");
+    },
+
+    onSuccess: () => {
+      toast.success("Проект обновлён");
     },
 
     // После успеха/ошибки инвалидируем
@@ -147,6 +157,14 @@ export function useDeleteProject() {
       });
 
       return { previousProjects };
+    },
+
+    onSuccess: () => {
+      toast.success("Проект удалён");
+    },
+
+    onError: (error) => {
+      toast.error(error.message || "Ошибка удаления проекта");
     },
 
     onSettled: () => {

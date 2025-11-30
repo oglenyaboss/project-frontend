@@ -3,6 +3,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { queryKeys, type PaginationParams } from "@/shared/api";
 import type { InterviewUpdateRequest } from "@/shared/lib/schemas";
@@ -69,6 +70,10 @@ export function useUploadInterview() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.interviews.byProject(newInterview.project.id),
       });
+      toast.success("Интервью загружено");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка загрузки интервью");
     },
   });
 }
@@ -98,6 +103,10 @@ export function useUpdateInterview() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.interviews.byProject(updatedInterview.project.id),
       });
+      toast.success("Интервью обновлено");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка обновления интервью");
     },
   });
 }
@@ -121,6 +130,10 @@ export function useDeleteInterview() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.interviews.byProject(projectId),
       });
+      toast.success("Интервью удалено");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка удаления интервью");
     },
   });
 }

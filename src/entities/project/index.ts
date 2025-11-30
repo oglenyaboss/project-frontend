@@ -27,3 +27,6 @@ export {
   useUpdateProject,
   useDeleteProject,
 } from "./model/queries";
+
+// UI Components
+export { ProjectCard } from "./ui/project-card";

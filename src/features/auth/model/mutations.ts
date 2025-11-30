@@ -4,6 +4,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { queryKeys } from "@/shared/api";
 import type { LoginRequest, RegisterRequest } from "@/shared/lib/schemas";
@@ -26,8 +27,12 @@ export function useLogin() {
     onSuccess: () => {
       // Инвалидируем кеш пользователя
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all() });
+      toast.success("Добро пожаловать!");
       // Редирект на дашборд
       router.push("/dashboard");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка авторизации");
     },
   });
 }
@@ -48,8 +53,12 @@ export function useRegister() {
     onSuccess: () => {
       // Инвалидируем кеш пользователя
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all() });
+      toast.success("Регистрация успешна!");
       // Редирект на дашборд
       router.push("/dashboard");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка регистрации");
     },
   });
 }
@@ -70,8 +79,12 @@ export function useLogout() {
     onSuccess: () => {
       // Очищаем весь кеш
       queryClient.clear();
+      toast.success("Вы вышли из системы");
       // Редирект на логин
       router.push("/login");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка выхода");
     },
   });
 }

@@ -32,3 +32,10 @@ export {
 
 // WebSocket hook
 export { useInterviewStatus } from "./model/use-interview-status";
+
+// UI Components
+export { InterviewCard } from "./ui/interview-card";
+export {
+  InterviewStatusBadge,
+  InterviewTypeBadge,
+} from "./ui/interview-status-badge";
