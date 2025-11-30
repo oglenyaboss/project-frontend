@@ -3,11 +3,7 @@
 > Документация по интеграции с бэкендом через TanStack Query
 
 **Дата создания:** 30 ноября 2025  
-**Статус:** В разработке
-
----
-
-## 📋 Содержание
+**Статус:** ✅ Реализовано
 
 1. [Обзор архитектуры](#обзор-архитектуры)
 2. [Принятые решения](#принятые-решения)
@@ -385,43 +381,626 @@ const { status, isConnected } = useInterviewStatus(interviewId, {
 
 ## 📅 Фазы реализации
 
-### Фаза 1: Инфраструктура 🔴
+### Фаза 1: Инфраструктура ✅
 
-- [ ] Установка зависимостей (@tanstack/react-query, zod, axios)
-- [ ] Настройка Axios client с interceptors
-- [ ] Создание QueryClient и Provider
-- [ ] Zod схемы из OpenAPI
-- [ ] Query keys factory
+- [x] Установка зависимостей (@tanstack/react-query, zod, axios)
+- [x] Настройка Axios client с interceptors
+- [x] Создание QueryClient и Provider
+- [x] Zod схемы из OpenAPI
+- [x] Query keys factory
 
-### Фаза 2: Auth 🔴
+### Фаза 2: Auth ✅
 
-- [ ] BFF routes для auth (login, register, logout, refresh)
-- [ ] Cookie management
-- [ ] useLogin, useRegister, useLogout хуки
-- [ ] Интеграция с auth-store (Zustand)
-- [ ] Обновление login page
+- [x] BFF routes для auth (login, register, logout, refresh)
+- [x] Cookie management
+- [x] useLogin, useRegister, useLogout хуки
+- [x] Интеграция с auth-store (Zustand)
+- [ ] Обновление login page (UI)
 
-### Фаза 3: User 🟡
+### Фаза 3: User ✅
 
-- [ ] BFF routes для user
-- [ ] entities/user структура
-- [ ] useCurrentUser, useUpdateUser хуки
+- [x] BFF routes для user
+- [x] entities/user структура
+- [x] useCurrentUser, useUpdateUser хуки
 - [ ] Интеграция с UI (user dropdown)
 
-### Фаза 4: Projects 🟡
+### Фаза 4: Projects ✅
 
-- [ ] BFF routes для projects
-- [ ] entities/project структура
-- [ ] CRUD хуки с optimistic updates
+- [x] BFF routes для projects
+- [x] entities/project структура
+- [x] CRUD хуки с optimistic updates
 - [ ] UI компоненты (list, card)
 
-### Фаза 5: Interviews 🟢
+### Фаза 5: Interviews ✅
 
-- [ ] BFF routes для interviews
-- [ ] entities/interview структура
-- [ ] CRUD хуки + upload
-- [ ] WebSocket для статусов
+- [x] BFF routes для interviews
+- [x] entities/interview структура
+- [x] CRUD хуки + upload
+- [x] WebSocket для статусов
 - [ ] UI компоненты
+
+---
+
+## 🎯 Оставшаяся работа (UI интеграция)
+
+> API слой полностью готов. Осталось интегрировать хуки в UI компоненты.
+
+### Приоритеты
+
+| Задача                       | Приоритет  | Сложность | Файлы                                           |
+| ---------------------------- | ---------- | --------- | ----------------------------------------------- |
+| Middleware для защиты роутов | 🔴 Высокий | Низкая    | `src/middleware.ts`                             |
+| Обновить форму логина        | 🔴 Высокий | Средняя   | `src/app/login/page.tsx`                        |
+| Интеграция user в sidebar    | 🔴 Высокий | Низкая    | `widgets/app-sidebar`, `features/user-dropdown` |
+| Dashboard с проектами        | 🟡 Средний | Средняя   | `src/app/dashboard/page.tsx`                    |
+| Страница проекта с интервью  | 🟡 Средний | Средняя   | `src/app/projects/[id]/page.tsx`                |
+| Страница регистрации         | 🟢 Низкий  | Низкая    | `src/app/register/page.tsx`                     |
+| Toast уведомления            | 🟢 Низкий  | Низкая    | `src/shared/ui/toast.tsx`                       |
+
+---
+
+### 1. Middleware для защиты роутов
+
+Создать `src/middleware.ts` для проверки аутентификации:
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const PUBLIC_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/login", "/register"]; // Редирект на dashboard если залогинен
+
+export function middleware(request: NextRequest) {
+  const accessToken = request.cookies.get("access_token")?.value;
+  const { pathname } = request.nextUrl;
+
+  // Публичные API routes пропускаем
+  if (pathname.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
+  // Если не авторизован и не на публичной странице → login
+  if (
+    !accessToken &&
+    !PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
+  ) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Если авторизован и на auth странице → dashboard
+  if (accessToken && AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|public).*)"],
+};
+```
+
+---
+
+### 2. Обновить форму логина
+
+Интегрировать `useLogin` хук в форму:
+
+```typescript
+// src/app/login/page.tsx
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useLogin } from "@/features/auth";
+import { loginRequestSchema, type LoginRequest } from "@/shared/lib/schemas";
+import {
+  Button,
+  Input,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/shared/ui";
+
+export default function LoginPage() {
+  const { mutate: login, isPending, error } = useLogin();
+
+  const form = useForm<LoginRequest>({
+    resolver: zodResolver(loginRequestSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const onSubmit = (data: LoginRequest) => {
+    login(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="email@example.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Пароль</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {error && <p className="text-sm text-destructive">{error.message}</p>}
+
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? "Вход..." : "Войти"}
+        </Button>
+      </form>
+    </Form>
+  );
+}
+```
+
+**Зависимость:** Нужен `@hookform/resolvers`:
+
+```bash
+npm install @hookform/resolvers
+```
+
+---
+
+### 3. Интеграция user в sidebar
+
+Заменить моки на реальные данные в `user-dropdown.tsx`:
+
+```typescript
+// src/features/user-dropdown/ui/user-dropdown.tsx
+"use client";
+
+import { useCurrentUser } from "@/entities/user";
+import { useLogout } from "@/features/auth";
+import {
+  Avatar,
+  AvatarFallback,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Skeleton,
+} from "@/shared/ui";
+import { LogOut, Settings, User } from "lucide-react";
+
+export function UserDropdown() {
+  const { data: user, isLoading } = useCurrentUser();
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+
+  if (isLoading) {
+    return <Skeleton className="h-8 w-8 rounded-full" />;
+  }
+
+  if (!user) return null;
+
+  const initials =
+    user.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() || "U";
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 rounded-lg p-2 hover:bg-accent">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium">{user.name || user.email}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem>
+          <User className="mr-2 h-4 w-4" />
+          Профиль
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Settings className="mr-2 h-4 w-4" />
+          Настройки
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => logout()}
+          disabled={isLoggingOut}
+          className="text-destructive"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          {isLoggingOut ? "Выход..." : "Выйти"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+```
+
+---
+
+### 4. Dashboard с проектами
+
+Создать UI для списка проектов:
+
+```typescript
+// src/app/dashboard/page.tsx
+"use client";
+
+import { useState } from "react";
+import { useProjects, useCreateProject } from "@/entities/project";
+import {
+  Button,
+  Input,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Skeleton,
+} from "@/shared/ui";
+import { Plus, Search } from "lucide-react";
+
+// Компонент карточки проекта (создать в entities/project/ui/)
+import { ProjectCard } from "@/entities/project";
+
+export default function DashboardPage() {
+  const [search, setSearch] = useState("");
+  const { data: projects, isLoading, error } = useProjects({ search });
+  const createProject = useCreateProject();
+
+  return (
+    <div className="container py-8">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Мои проекты</h1>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Новый проект
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Создать проект</DialogTitle>
+            </DialogHeader>
+            {/* CreateProjectForm */}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Поиск проектов..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-40 rounded-lg" />
+          ))}
+        </div>
+      ) : error ? (
+        <p className="text-destructive">Ошибка загрузки проектов</p>
+      ) : projects?.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-4">Нет проектов</p>
+          <Button>Создать первый проект</Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {projects?.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Нужно создать:**
+
+- `src/entities/project/ui/project-card.tsx` — карточка проекта
+- `src/features/create-project/` — форма создания проекта
+- `src/features/edit-project/` — форма редактирования
+- `src/features/delete-project/` — подтверждение удаления
+
+---
+
+### 5. Страница проекта с интервью
+
+```typescript
+// src/app/projects/[id]/page.tsx
+"use client";
+
+import { use } from "react";
+import { useProject } from "@/entities/project";
+import { useInterviews, useUploadInterview } from "@/entities/interview";
+import { Button, Skeleton } from "@/shared/ui";
+import { Upload } from "lucide-react";
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default function ProjectPage({ params }: Props) {
+  const { id } = use(params);
+  const projectId = parseInt(id, 10);
+
+  const { data: project, isLoading: projectLoading } = useProject(projectId);
+  const { data: interviews, isLoading: interviewsLoading } =
+    useInterviews(projectId);
+  const uploadInterview = useUploadInterview();
+
+  const handleFileUpload = (files: FileList) => {
+    const file = files[0];
+    if (file) {
+      uploadInterview.mutate({ projectId, file });
+    }
+  };
+
+  if (projectLoading) {
+    return <Skeleton className="h-96" />;
+  }
+
+  return (
+    <div className="container py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">{project?.name}</h1>
+        <p className="text-muted-foreground">{project?.description}</p>
+      </div>
+
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Интервью</h2>
+        <Button asChild>
+          <label className="cursor-pointer">
+            <Upload className="mr-2 h-4 w-4" />
+            Загрузить интервью
+            <input
+              type="file"
+              accept="audio/*,video/*"
+              className="hidden"
+              onChange={(e) =>
+                e.target.files && handleFileUpload(e.target.files)
+              }
+            />
+          </label>
+        </Button>
+      </div>
+
+      {interviewsLoading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-lg" />
+          ))}
+        </div>
+      ) : interviews?.length === 0 ? (
+        <p className="text-muted-foreground text-center py-12">
+          Нет интервью. Загрузите первое интервью.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {interviews?.map((interview) => (
+            <InterviewCard
+              key={interview.id}
+              interview={interview}
+              projectId={projectId}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Нужно создать:**
+
+- `src/entities/interview/ui/interview-card.tsx` — карточка интервью
+- `src/entities/interview/ui/interview-status-badge.tsx` — бейдж статуса с WebSocket
+
+---
+
+### 6. WebSocket интеграция в UI
+
+Использование хука `useInterviewStatus` в карточке интервью:
+
+```typescript
+// src/entities/interview/ui/interview-card.tsx
+"use client";
+
+import { useInterviewStatus } from "@/entities/interview";
+import { Badge } from "@/shared/ui";
+import { Loader2 } from "lucide-react";
+
+interface Props {
+  interview: Interview;
+  projectId: number;
+}
+
+export function InterviewCard({ interview, projectId }: Props) {
+  // Подключаем WebSocket только для processing статуса
+  const { status, isConnected } = useInterviewStatus(interview.id, {
+    enabled: interview.status === "processing",
+  });
+
+  const currentStatus = status || interview.status;
+
+  return (
+    <div className="rounded-lg border p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium">{interview.filename}</h3>
+        <InterviewStatusBadge
+          status={currentStatus}
+          isConnected={isConnected}
+        />
+      </div>
+    </div>
+  );
+}
+
+function InterviewStatusBadge({
+  status,
+  isConnected,
+}: {
+  status: string;
+  isConnected?: boolean;
+}) {
+  const variants: Record<
+    string,
+    {
+      variant: "default" | "secondary" | "destructive" | "outline";
+      label: string;
+    }
+  > = {
+    uploaded: { variant: "secondary", label: "Загружено" },
+    processing: { variant: "default", label: "Обработка" },
+    done: { variant: "outline", label: "Готово" },
+    error: { variant: "destructive", label: "Ошибка" },
+  };
+
+  const { variant, label } = variants[status] || variants.uploaded;
+
+  return (
+    <Badge variant={variant} className="flex items-center gap-1">
+      {status === "processing" && <Loader2 className="h-3 w-3 animate-spin" />}
+      {label}
+      {status === "processing" && isConnected && (
+        <span className="ml-1 h-2 w-2 rounded-full bg-green-500" />
+      )}
+    </Badge>
+  );
+}
+```
+
+---
+
+### 7. Toast уведомления
+
+Установить и настроить sonner для уведомлений:
+
+```bash
+npx shadcn@latest add sonner
+```
+
+Добавить в layout и использовать в мутациях:
+
+```typescript
+// В мутациях
+import { toast } from "sonner";
+
+const createProject = useCreateProject();
+
+const handleCreate = (data: CreateProjectRequest) => {
+  createProject.mutate(data, {
+    onSuccess: () => {
+      toast.success("Проект создан");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка создания проекта");
+    },
+  });
+};
+```
+
+---
+
+### 8. Страница регистрации
+
+```typescript
+// src/app/register/page.tsx
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRegister } from "@/features/auth";
+import {
+  registerRequestSchema,
+  type RegisterRequest,
+} from "@/shared/lib/schemas";
+import Link from "next/link";
+
+export default function RegisterPage() {
+  const { mutate: register, isPending, error } = useRegister();
+
+  const form = useForm<RegisterRequest>({
+    resolver: zodResolver(registerRequestSchema),
+    defaultValues: { email: "", password: "", name: "" },
+  });
+
+  const onSubmit = (data: RegisterRequest) => {
+    register(data);
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-md space-y-6 p-8">
+        <h1 className="text-2xl font-bold text-center">Регистрация</h1>
+
+        {/* Форма аналогична LoginPage */}
+
+        <p className="text-center text-sm text-muted-foreground">
+          Уже есть аккаунт?{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            Войти
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### Чеклист UI интеграции
+
+- [ ] Создать `src/middleware.ts`
+- [ ] Установить `@hookform/resolvers`
+- [ ] Обновить `src/app/login/page.tsx`
+- [ ] Обновить `src/features/user-dropdown/ui/user-dropdown.tsx`
+- [ ] Создать `src/entities/project/ui/project-card.tsx`
+- [ ] Обновить `src/app/dashboard/page.tsx`
+- [ ] Создать `src/app/projects/[id]/page.tsx`
+- [ ] Создать `src/entities/interview/ui/interview-card.tsx`
+- [ ] Создать `src/entities/interview/ui/interview-status-badge.tsx`
+- [ ] Установить sonner: `npx shadcn@latest add sonner`
+- [ ] Добавить Toaster в layout
+- [ ] Создать `src/app/register/page.tsx`
+- [ ] Обновить AGENTS.md с новыми entities
 
 ---
 
@@ -431,6 +1010,7 @@ const { status, isConnected } = useInterviewStatus(interviewId, {
 {
   "dependencies": {
     "@tanstack/react-query": "^5.x",
+    "@hookform/resolvers": "^3.x",
     "axios": "^1.x",
     "zod": "^3.x"
   },

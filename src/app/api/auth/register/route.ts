@@ -9,8 +9,8 @@ import {
 } from "@/shared/api/bff-utils";
 
 /**
- * BFF API Route для авторизации
- * POST /api/auth/login
+ * BFF API Route для регистрации
+ * POST /api/auth/register
  *
  * Проксирует запрос на бэкенд и сохраняет токены в httpOnly cookies
  */
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Запрос к бэкенду
-    const response = await fetch(`${BACKEND_URL}/auth/login`, {
+    const response = await fetch(`${BACKEND_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
-    // Успешный логин — сохраняем токены в cookies
+    // Успешная регистрация — сохраняем токены в cookies
     const cookieStore = await cookies();
 
     cookieStore.set(ACCESS_TOKEN_COOKIE, data.access_token, {
@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
     });
 
     // Возвращаем успех без токенов (они в cookies)
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Register error:", error);
     return NextResponse.json(
       {
         message: "Внутренняя ошибка сервера",

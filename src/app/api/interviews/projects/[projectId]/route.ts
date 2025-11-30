@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   ACCESS_TOKEN_COOKIE,
@@ -10,7 +10,7 @@ import {
 } from "@/shared/api/bff-utils";
 
 /**
- * Попытка обновить access token используя refresh token
+ * Попытка обновить access token
  */
 async function tryRefreshToken(
   refreshToken: string
@@ -18,30 +18,27 @@ async function tryRefreshToken(
   try {
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
-
-    if (!response.ok) {
-      return null;
-    }
-
+    if (!response.ok) return null;
     return await response.json();
   } catch {
     return null;
   }
 }
 
+interface RouteParams {
+  params: Promise<{ projectId: string }>;
+}
+
 /**
- * BFF API Route для получения текущего пользователя
- * GET /api/auth/me
- *
- * Проксирует запрос на /user/me с автоматическим refresh токена
+ * BFF API Route для интервью проекта
+ * GET /api/interviews/projects/:projectId - список интервью
  */
-export async function GET() {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { projectId } = await params;
     const cookieStore = await cookies();
     const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
     const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
@@ -53,51 +50,43 @@ export async function GET() {
       );
     }
 
-    // Пробуем получить пользователя
-    let response = await fetch(`${BACKEND_URL}/user/me`, {
-      headers: createAuthHeaders(accessToken),
-    });
+    const { searchParams } = new URL(request.url);
 
-    // Если 401 и есть refresh token — пробуем обновить
+    let response = await fetch(
+      `${BACKEND_URL}/interviews/projects/${projectId}?${searchParams.toString()}`,
+      { headers: createAuthHeaders(accessToken) }
+    );
+
     if (response.status === 401 && refreshToken) {
       const tokens = await tryRefreshToken(refreshToken);
-
       if (tokens) {
-        // Обновляем cookies
         cookieStore.set(ACCESS_TOKEN_COOKIE, tokens.access_token, {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 15,
         });
-
         cookieStore.set(REFRESH_TOKEN_COOKIE, tokens.refresh_token, {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 60 * 24 * 7,
         });
-
-        // Повторяем запрос с новым токеном
-        response = await fetch(`${BACKEND_URL}/user/me`, {
-          headers: createAuthHeaders(tokens.access_token),
-        });
+        response = await fetch(
+          `${BACKEND_URL}/interviews/projects/${projectId}?${searchParams.toString()}`,
+          { headers: createAuthHeaders(tokens.access_token) }
+        );
       }
     }
 
     const data = await response.json();
 
-    // Если всё равно ошибка — чистим cookies и возвращаем ошибку
     if (!response.ok) {
-      if (response.status === 401) {
-        cookieStore.delete(ACCESS_TOKEN_COOKIE);
-        cookieStore.delete(REFRESH_TOKEN_COOKIE);
-      }
       return NextResponse.json(data, { status: response.status });
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Get user error:", error);
+    console.error("Get interviews error:", error);
     return NextResponse.json(
       {
-        message: "Ошибка при получении данных пользователя",
+        message: "Ошибка при получении интервью",
         detail: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }

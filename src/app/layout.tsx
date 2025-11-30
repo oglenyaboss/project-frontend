@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 
+import { Providers } from "./providers";
 import "./globals.css";
 
 const fontSans = Inter({
@@ -15,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontSans.variable} font-sans antialiased`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

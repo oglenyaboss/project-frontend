@@ -1,32 +1,48 @@
-import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  BACKEND_URL,
+  createAuthHeaders,
+} from "@/shared/api/bff-utils";
 
 /**
  * BFF API Route для выхода
  * POST /api/auth/logout
+ *
+ * Инвалидирует токен на бэкенде и удаляет cookies
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    // 🎭 MOCK: Просто удаляем cookie, без запроса к бэкенду
-    const token = request.cookies.get("auth_token")?.value;
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
-    if (token) {
-      // TODO: Добавить запрос к реальному бэкенду для инвалидации токена
-      // Пока просто логируем
-      console.log("Mock logout for token:", token);
+    // Если есть токен — отправляем logout на бэкенд
+    if (accessToken) {
+      try {
+        await fetch(`${BACKEND_URL}/auth/logout`, {
+          method: "POST",
+          headers: createAuthHeaders(accessToken),
+        });
+      } catch (error) {
+        // Игнорируем ошибки бэкенда при logout
+        console.error("Backend logout error:", error);
+      }
     }
 
-    // Удаляем cookie
-    const response = NextResponse.json({ data: { success: true } });
-    response.cookies.delete("auth_token");
+    // Удаляем cookies в любом случае
+    cookieStore.delete(ACCESS_TOKEN_COOKIE);
+    cookieStore.delete(REFRESH_TOKEN_COOKIE);
 
-    return response;
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Logout error:", error);
     return NextResponse.json(
       {
-        error: {
-          message: "Ошибка при выходе",
-        },
+        message: "Ошибка при выходе",
+        detail: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
