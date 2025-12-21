@@ -2,25 +2,26 @@
 
 import { use, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  Upload,
-  Search,
-  FileAudio,
-  Loader2,
   FolderOpen,
+  Loader2,
+  Sparkles,
+  FileText,
   Clock,
-  BarChart3,
+  CheckCircle,
+  PlayCircle,
+  Upload,
+  AlertTriangle,
 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { Button, Input, Skeleton, Progress } from "@/shared/ui";
+import { Button, Skeleton } from "@/shared/ui";
 import { useProject } from "@/entities/project";
-import {
-  useInterviews,
-  useUploadInterview,
-  InterviewCard,
-} from "@/entities/interview";
+import { addFilesToProject } from "@/entities/project/api/project-api";
 import { UserDropdown } from "@/features/user-dropdown";
+import { agentApi } from "@/shared/api";
 import { cn } from "@/shared/lib";
 
 interface Props {
@@ -30,37 +31,61 @@ interface Props {
 export default function ProjectPage({ params }: Props) {
   const { id } = use(params);
   const projectId = parseInt(id, 10);
-
-  const [search, setSearch] = useState("");
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isStartingSession, setIsStartingSession] = useState(false);
 
   const {
     data: project,
     isLoading: projectLoading,
     error: projectError,
   } = useProject(projectId);
-  const { data: interviewsData, isLoading: interviewsLoading } = useInterviews(
-    projectId,
-    { search }
-  );
-  const {
-    mutate: uploadInterview,
-    isPending: isUploading,
-    variables: uploadingFile,
-  } = useUploadInterview();
 
-  const interviews = interviewsData?.items ?? [];
+  // Upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: (files: File[]) => addFilesToProject(projectId, files),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    onError: (error) => {
+      console.error("Upload failed:", error);
+      alert("Не удалось загрузить файлы");
+    },
+  });
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      uploadInterview({ projectId, data: { file } });
-      event.target.value = "";
+  const handleStartSession = async () => {
+    setIsStartingSession(true);
+    try {
+      const { data: session, error } = await agentApi.startProjectSession(
+        projectId,
+        { user_goal: "Анализ требований проекта" }
+      );
+      if (session) {
+        router.push(`/agent/sessions/${session.id}`);
+      } else {
+        console.error("Failed to start session:", error);
+        alert("Не удалось запустить сессию: " + (error || "Неизвестная ошибка"));
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Ошибка запуска сессии");
     }
+    setIsStartingSession(false);
   };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      uploadMutation.mutate(files);
+    }
   };
 
   if (projectLoading) {
@@ -104,29 +129,32 @@ export default function ProjectPage({ params }: Props) {
     );
   }
 
-  const stats = [
+  // Project info cards
+  const infoCards = [
     {
-      label: "Интервью",
-      value: interviews.length,
-      icon: FileAudio,
+      label: "Статус",
+      value: project.status === "active" ? "Активен" : project.status === "finished" ? "Завершен" : project.status,
+      icon: project.status === "finished" ? CheckCircle : PlayCircle,
+      color: project.status === "finished" ? "text-green-500" : "text-blue-500",
+      bgColor: project.status === "finished" ? "bg-green-500/10" : "bg-blue-500/10",
+    },
+    {
+      label: "Файлов",
+      value: project.files?.length ?? 0,
+      icon: FileText,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
     {
-      label: "Обработано",
-      value: interviews.filter((i) => i.status === "done").length,
-      icon: BarChart3,
-      color: "text-success",
-      bgColor: "bg-success/10",
-    },
-    {
-      label: "В обработке",
-      value: interviews.filter((i) => i.status === "processing").length,
+      label: "Создан",
+      value: new Date(project.created_at).toLocaleDateString("ru-RU"),
       icon: Clock,
-      color: "text-warning",
-      bgColor: "bg-warning/10",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
   ];
+
+  const hasFiles = project.files && project.files.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -148,7 +176,7 @@ export default function ProjectPage({ params }: Props) {
               <FolderOpen className="w-5 h-5 text-white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-semibold text-base">{project.name}</h1>
+              <h1 className="font-semibold text-base">{project.title}</h1>
               {project.description && (
                 <p className="text-sm text-muted-foreground truncate max-w-md">
                   {project.description}
@@ -157,29 +185,17 @@ export default function ProjectPage({ params }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Button
-              onClick={handleUploadClick}
-              disabled={isUploading}
-              className="hidden sm:flex shadow-sber hover:shadow-sber-lg transition-all duration-300"
-            >
-              {isUploading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 h-4 w-4" />
-              )}
-              {isUploading ? "Загрузка..." : "Загрузить"}
-            </Button>
             <UserDropdown />
           </div>
         </div>
       </header>
 
       {/* Main content */}
-      <main className="container py-8 px-4 sm:px-6 lg:px-8">
+      <main className="container py-8 px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Mobile Title */}
         <div className="sm:hidden mb-6 animate-fade-in">
           <h1 className="text-2xl font-bold tracking-tight mb-1">
-            {project.name}
+            {project.title}
           </h1>
           {project.description && (
             <p className="text-muted-foreground">{project.description}</p>
@@ -188,7 +204,7 @@ export default function ProjectPage({ params }: Props) {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8 animate-slide-up">
-          {stats.map((stat, index) => (
+          {infoCards.map((stat, index) => (
             <div
               key={index}
               className="rounded-xl border bg-card p-4 shadow-premium"
@@ -213,109 +229,130 @@ export default function ProjectPage({ params }: Props) {
           ))}
         </div>
 
-        {/* Actions bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск интервью..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-11"
-            />
+        {/* Files section */}
+        <div className="mb-8 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Файлы проекта</h2>
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
+                onChange={handleFileChange}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUploadClick}
+                disabled={uploadMutation.isPending}
+              >
+                {uploadMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="mr-2 h-4 w-4" />
+                )}
+                Загрузить файлы
+              </Button>
+            </div>
           </div>
 
-          <div className="sm:hidden">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="audio/*,video/*,.txt,.doc,.docx"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              onClick={handleUploadClick}
-              disabled={isUploading}
-              className="w-full shadow-sber"
-            >
-              {isUploading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
+          {project.files && project.files.length > 0 ? (
+            <div className="rounded-xl border bg-card divide-y">
+              {project.files.map((file) => (
+                <div key={file.id} className="flex items-center gap-3 p-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{file.original_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {(file.file_size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border bg-card p-8 text-center border-dashed">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-1">Нет файлов</h3>
+              <p className="text-muted-foreground mb-4">
+                Загрузите документы, чтобы AI-агент мог их проанализировать
+              </p>
+              <Button onClick={handleUploadClick} variant="outline">
                 <Upload className="mr-2 h-4 w-4" />
-              )}
-              {isUploading ? "Загрузка..." : "Загрузить интервью"}
-            </Button>
-          </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/*,video/*,.txt,.doc,.docx"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
+                Загрузить
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Upload progress */}
-        {isUploading && uploadingFile && (
-          <div className="mb-6 rounded-xl border bg-card p-4 shadow-premium animate-scale-in">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">
-                  {uploadingFile.data.file?.name || "Загрузка файла"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Загрузка и обработка...
-                </p>
-              </div>
+        {/* Agent Session CTA */}
+        <div className={cn(
+          "rounded-xl border p-6 shadow-premium animate-scale-in transition-colors",
+          hasFiles
+            ? "bg-gradient-to-br from-primary/5 to-primary/10"
+            : "bg-muted/30"
+        )}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className={cn(
+              "w-14 h-14 rounded-xl flex items-center justify-center shadow-md shrink-0 transition-colors",
+              hasFiles ? "gradient-sber shadow-sber" : "bg-muted-foreground/20"
+            )}>
+              <Sparkles className={cn("w-7 h-7", hasFiles ? "text-white" : "text-muted-foreground")} />
             </div>
-            <Progress value={undefined} className="h-1.5 rounded-full" />
-          </div>
-        )}
-
-        {/* Content */}
-        {interviewsLoading ? (
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
-        ) : interviews.length === 0 ? (
-          <div className="text-center py-16 animate-fade-in">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-              <FileAudio className="w-10 h-10 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Нет интервью</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Загрузите первое интервью в этот проект, чтобы начать работу
-            </p>
-            <Button
-              onClick={handleUploadClick}
-              disabled={isUploading}
-              className="rounded-xl shadow-sber hover:shadow-sber-lg transition-all duration-300"
-            >
-              {isUploading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 h-4 w-4" />
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold mb-1">AI-анализ требований</h2>
+              <p className="text-muted-foreground">
+                Запустите сессию с AI-агентом, чтобы сформировать бизнес-требования
+                на основе файлов проекта.
+              </p>
+              {!hasFiles && (
+                <div className="flex items-center gap-2 mt-2 text-amber-500 text-sm font-medium">
+                  <AlertTriangle className="w-4 h-4" />
+                  Для запуска сессии необходимы файлы в проекте
+                </div>
               )}
-              Загрузить интервью
+            </div>
+            <Button
+              size="lg"
+              onClick={handleStartSession}
+              disabled={isStartingSession || !hasFiles}
+              className={cn(
+                "w-full sm:w-auto transition-all duration-300",
+                hasFiles ? "shadow-sber hover:shadow-sber-lg" : "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {isStartingSession ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Запуск...
+                </>
+              ) : (
+                <>
+                  <PlayCircle className="mr-2 h-5 w-5" />
+                  Начать сессию
+                </>
+              )}
             </Button>
           </div>
-        ) : (
-          <div className="space-y-3 animate-fade-in">
-            {interviews.map((interview) => (
-              <InterviewCard
-                key={interview.id}
-                interview={interview}
-                projectId={projectId}
-              />
-            ))}
-          </div>
-        )}
+        </div>
+
+        {/* Context session link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-muted-foreground mb-2">
+            Или создайте сессию на основе контекстных вопросов
+          </p>
+          <Button variant="outline" asChild>
+            <Link href="/agent/context">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Контекстная сессия
+            </Link>
+          </Button>
+        </div>
       </main>
     </div>
   );

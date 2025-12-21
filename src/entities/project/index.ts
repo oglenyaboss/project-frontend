@@ -7,13 +7,16 @@ export {
   getProjects,
   getProject,
   createProject,
-  updateProject,
+  addFilesToProject,
   deleteProject,
 } from "./api/project-api";
 
 // Types
 export type {
+  ProjectStatus,
+  ProjectFileBase,
   Project,
+  ProjectShallow,
   ProjectsList,
   ProjectCreateRequest,
   ProjectUpdateRequest,
@@ -24,7 +27,7 @@ export {
   useProjects,
   useProject,
   useCreateProject,
-  useUpdateProject,
+  useAddFilesToProject,
   useDeleteProject,
 } from "./model/queries";
 

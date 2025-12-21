@@ -6,7 +6,11 @@ import {
   REFRESH_TOKEN_COOKIE,
   BACKEND_URL,
   createAuthHeaders,
+  loggedFetch,
+  logError,
 } from "@/shared/api/bff-utils";
+
+const ROUTE_NAME = "auth/logout";
 
 /**
  * BFF API Route для выхода
@@ -22,13 +26,14 @@ export async function POST() {
     // Если есть токен — отправляем logout на бэкенд
     if (accessToken) {
       try {
-        await fetch(`${BACKEND_URL}/auth/logout`, {
+        await loggedFetch(`${BACKEND_URL}/auth/logout`, {
+          route: ROUTE_NAME,
           method: "POST",
           headers: createAuthHeaders(accessToken),
         });
       } catch (error) {
         // Игнорируем ошибки бэкенда при logout
-        console.error("Backend logout error:", error);
+        logError(ROUTE_NAME, error);
       }
     }
 
@@ -38,7 +43,7 @@ export async function POST() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Logout error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при выходе",

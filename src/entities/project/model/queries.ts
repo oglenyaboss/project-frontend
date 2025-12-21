@@ -6,17 +6,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { queryKeys, type PaginationParams } from "@/shared/api";
-import type {
-  Project,
-  ProjectCreateRequest,
-  ProjectUpdateRequest,
-} from "@/shared/lib/schemas";
+import type { Project, ProjectCreateRequest } from "@/shared/lib/schemas";
 
 import {
   getProjects,
   getProject,
   createProject,
-  updateProject,
+  addFilesToProject,
   deleteProject,
 } from "../api/project-api";
 
@@ -54,13 +50,15 @@ export function useProject(id: number) {
  *
  * @example
  * const { mutate: create, isPending } = useCreateProject();
- * create({ name: 'New Project', description: 'Description' });
+ * create({ title: 'New Project', description: 'Description', files: [file1, file2] });
  */
 export function useCreateProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: ProjectCreateRequest) => createProject(data),
+    mutationFn: (
+      data: Omit<ProjectCreateRequest, "files"> & { files?: File[] }
+    ) => createProject(data),
     onSuccess: () => {
       // Инвалидируем список проектов
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() });
@@ -73,63 +71,30 @@ export function useCreateProject() {
 }
 
 /**
- * Обновить проект (с optimistic update)
+ * Добавить файлы к проекту
  *
  * @example
- * const { mutate: update, isPending } = useUpdateProject();
- * update({ id: 1, data: { name: 'Updated Name' } });
+ * const { mutate: addFiles, isPending } = useAddFilesToProject();
+ * addFiles({ id: 1, files: [file1, file2] });
  */
-export function useUpdateProject() {
+export function useAddFilesToProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ProjectUpdateRequest }) =>
-      updateProject(id, data),
+    mutationFn: ({ id, files }: { id: number; files: File[] }) =>
+      addFilesToProject(id, files),
 
-    // Optimistic update
-    onMutate: async ({ id, data }) => {
-      // Отменяем исходящие запросы
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.projects.detail(id),
-      });
-
-      // Сохраняем предыдущее значение
-      const previousProject = queryClient.getQueryData<Project>(
-        queryKeys.projects.detail(id)
-      );
-
-      // Оптимистично обновляем кеш
-      if (previousProject) {
-        queryClient.setQueryData(queryKeys.projects.detail(id), {
-          ...previousProject,
-          ...data,
-        });
-      }
-
-      return { previousProject };
-    },
-
-    // При ошибке откатываем
-    onError: (err, { id }, context) => {
-      if (context?.previousProject) {
-        queryClient.setQueryData(
-          queryKeys.projects.detail(id),
-          context.previousProject
-        );
-      }
-      toast.error(err.message || "Ошибка обновления проекта");
-    },
-
-    onSuccess: () => {
-      toast.success("Проект обновлён");
-    },
-
-    // После успеха/ошибки инвалидируем
-    onSettled: (data, error, { id }) => {
+    onSuccess: (_, { id }) => {
+      // Инвалидируем проект и список
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects.detail(id),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all() });
+      toast.success("Файлы добавлены");
+    },
+
+    onError: (error) => {
+      toast.error(error.message || "Ошибка добавления файлов");
     },
   });
 }

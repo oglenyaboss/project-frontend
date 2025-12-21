@@ -7,7 +7,11 @@ import {
   COOKIE_OPTIONS,
   BACKEND_URL,
   createAuthHeaders,
+  loggedFetch,
+  logError,
 } from "@/shared/api/bff-utils";
+
+const ROUTE_NAME = "user/me";
 
 /**
  * Попытка обновить access token используя refresh token
@@ -18,9 +22,7 @@ async function tryRefreshToken(
   try {
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
@@ -52,8 +54,11 @@ export async function GET() {
       );
     }
 
+    const url = `${BACKEND_URL}/user/me`;
+
     // Пробуем получить пользователя
-    let response = await fetch(`${BACKEND_URL}/user/me`, {
+    let { response, data } = await loggedFetch(url, {
+      route: ROUTE_NAME,
       headers: createAuthHeaders(accessToken),
     });
 
@@ -74,13 +79,14 @@ export async function GET() {
         });
 
         // Повторяем запрос с новым токеном
-        response = await fetch(`${BACKEND_URL}/user/me`, {
+        const retryResult = await loggedFetch(url, {
+          route: ROUTE_NAME,
           headers: createAuthHeaders(tokens.access_token),
         });
+        response = retryResult.response;
+        data = retryResult.data;
       }
     }
-
-    const data = await response.json();
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -92,7 +98,7 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Get user error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при получении данных пользователя",
@@ -117,13 +123,19 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
+    const url = `${BACKEND_URL}/user/me`;
 
     // Запрос к бэкенду
-    let response = await fetch(`${BACKEND_URL}/user/me`, {
-      method: "PATCH",
-      headers: createAuthHeaders(accessToken),
-      body: JSON.stringify(body),
-    });
+    let { response, data } = await loggedFetch(
+      url,
+      {
+        route: ROUTE_NAME,
+        method: "PATCH",
+        headers: createAuthHeaders(accessToken),
+        body: JSON.stringify(body),
+      },
+      body
+    );
 
     // Если 401 и есть refresh token — пробуем обновить
     if (response.status === 401 && refreshToken) {
@@ -140,15 +152,20 @@ export async function PATCH(request: NextRequest) {
           maxAge: 60 * 60 * 24 * 7,
         });
 
-        response = await fetch(`${BACKEND_URL}/user/me`, {
-          method: "PATCH",
-          headers: createAuthHeaders(tokens.access_token),
-          body: JSON.stringify(body),
-        });
+        const retryResult = await loggedFetch(
+          url,
+          {
+            route: ROUTE_NAME,
+            method: "PATCH",
+            headers: createAuthHeaders(tokens.access_token),
+            body: JSON.stringify(body),
+          },
+          body
+        );
+        response = retryResult.response;
+        data = retryResult.data;
       }
     }
-
-    const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -156,7 +173,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Update user error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при обновлении данных пользователя",

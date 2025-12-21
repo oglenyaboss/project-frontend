@@ -6,8 +6,11 @@ import {
   REFRESH_TOKEN_COOKIE,
   COOKIE_OPTIONS,
   BACKEND_URL,
-  createAuthHeaders,
+  loggedFetch,
+  logError,
 } from "@/shared/api/bff-utils";
+
+const ROUTE_NAME = "projects";
 
 /**
  * Попытка обновить access token
@@ -29,9 +32,20 @@ async function tryRefreshToken(
 }
 
 /**
+ * Создает headers для запроса с Bearer token
+ */
+function createBearerHeaders(accessToken?: string): HeadersInit {
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+  return headers;
+}
+
+/**
  * BFF API Route для проектов
  * GET /api/projects - список проектов
- * POST /api/projects - создание проекта
+ * POST /api/projects - создание проекта (multipart/form-data)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -47,10 +61,17 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
+    const url = `${BACKEND_URL}/projects?${searchParams.toString()}`;
 
-    let response = await fetch(
-      `${BACKEND_URL}/projects?${searchParams.toString()}`,
-      { headers: createAuthHeaders(accessToken) }
+    let { response, data } = await loggedFetch(
+      url,
+      {
+        route: ROUTE_NAME,
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      }
     );
 
     // Refresh если нужно
@@ -65,14 +86,20 @@ export async function GET(request: NextRequest) {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 60 * 24 * 7,
         });
-        response = await fetch(
-          `${BACKEND_URL}/projects?${searchParams.toString()}`,
-          { headers: createAuthHeaders(tokens.access_token) }
+        const retryResult = await loggedFetch(
+          url,
+          {
+            route: ROUTE_NAME,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokens.access_token}`,
+            },
+          }
         );
+        response = retryResult.response;
+        data = retryResult.data;
       }
     }
-
-    const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -80,7 +107,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Get projects error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при получении проектов",
@@ -104,13 +131,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    // Обрабатываем FormData
+    const formData = await request.formData();
+    const url = `${BACKEND_URL}/projects`;
 
-    let response = await fetch(`${BACKEND_URL}/projects`, {
-      method: "POST",
-      headers: createAuthHeaders(accessToken),
-      body: JSON.stringify(body),
+    // Log FormData contents manually since we can't pass it to loggedFetch easily
+    const formDataLog: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      if (value instanceof File) {
+        formDataLog[key] = `[File: ${value.name}, ${value.size} bytes]`;
+      } else {
+        formDataLog[key] = String(value);
+      }
     });
+
+    let { response, data } = await loggedFetch(
+      url,
+      {
+        route: ROUTE_NAME,
+        method: "POST",
+        headers: createBearerHeaders(accessToken),
+        body: formData,
+      },
+      formDataLog
+    );
 
     if (response.status === 401 && refreshToken) {
       const tokens = await tryRefreshToken(refreshToken);
@@ -123,15 +167,20 @@ export async function POST(request: NextRequest) {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 60 * 24 * 7,
         });
-        response = await fetch(`${BACKEND_URL}/projects`, {
-          method: "POST",
-          headers: createAuthHeaders(tokens.access_token),
-          body: JSON.stringify(body),
-        });
+        const retryResult = await loggedFetch(
+          url,
+          {
+            route: ROUTE_NAME,
+            method: "POST",
+            headers: createBearerHeaders(tokens.access_token),
+            body: formData,
+          },
+          formDataLog
+        );
+        response = retryResult.response;
+        data = retryResult.data;
       }
     }
-
-    const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -139,7 +188,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error("Create project error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при создании проекта",

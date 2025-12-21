@@ -24,28 +24,72 @@ export {
 
 // Project
 export {
+  projectStatusEnum,
+  projectFileBaseSchema,
   projectSchema,
+  projectShallowSchema,
   projectsListSchema,
   projectCreateSchema,
   projectUpdateSchema,
+  type ProjectStatus,
+  type ProjectFileBase,
   type Project,
+  type ProjectShallow,
   type ProjectsList,
   type ProjectCreateRequest,
   type ProjectUpdateRequest,
 } from "./project";
 
-// Interview
+
+// Interview - REMOVED (endpoints no longer exist in backend)
+
+
+// Agent Session
 export {
-  interviewStatusEnum,
-  interviewTypeEnum,
-  interviewShallowSchema,
-  interviewSchema,
-  interviewsListSchema,
-  interviewUpdateSchema,
-  type InterviewStatus,
-  type InterviewType,
-  type InterviewShallow,
-  type Interview,
-  type InterviewsList,
-  type InterviewUpdateRequest,
-} from "./interview";
+  sessionStatusEnum,
+  agentSessionStatusEnum,
+  sessionMessageRoleEnum,
+  sessionMessageTypeEnum,
+  questionStatusEnum,
+  sessionCallbackEnum,
+  // WebSocket schemas
+  wsQuestionSchema,
+  wsAnswerSchema,
+  dialogueItemSchema,
+  wsResultSchema,
+  wsSessionResponseSchema,
+  // Other schemas
+  agentSessionMessageShallowSchema,
+  sessionStatusResponseSchema,
+  agentSessionBaseSchema,
+  requirementBaseSchema,
+  requirementUpdateSchema,
+  userSessionAnswerShallowSchema,
+  sessionStartProjectContextRequestSchema,
+  contextQuestionSchema,
+  sessionStartManualContextRequestSchema,
+  sessionAnswerRequestSchema,
+  type SessionStatus,
+  type AgentSessionStatus,
+  type SessionMessageRole,
+  type SessionMessageType,
+  type QuestionStatus,
+  type SessionCallbackEvent,
+  // WebSocket types
+  type WsQuestion,
+  type WsAnswer,
+  type DialogueItem,
+  type WsResult,
+  type WsSessionResponse,
+  // Other types
+  type AgentSessionMessage,
+  type SessionStatusResponse,
+  type AgentSessionBase,
+  type Requirement,
+  type RequirementUpdate,
+  type UserSessionAnswerShallow,
+  type SessionStartProjectContextRequest,
+  type ContextQuestion,
+  type SessionStartManualContextRequest,
+  type SessionAnswerRequest,
+} from "./agent-session";

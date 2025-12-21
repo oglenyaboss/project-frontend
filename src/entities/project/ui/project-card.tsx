@@ -27,11 +27,16 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui";
 import { cn } from "@/shared/lib";
-import type { Project } from "../model/types";
+import type { ProjectShallow } from "../model/types";
 import { useDeleteProject } from "../model/queries";
 
+// Extended ProjectShallow with optional description for card display
+interface ProjectCardProject extends ProjectShallow {
+  description?: string | null;
+}
+
 interface ProjectCardProps {
-  project: Project;
+  project: ProjectCardProject;
   className?: string;
   viewMode?: "grid" | "list";
 }
@@ -73,7 +78,7 @@ export function ProjectCard({
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
-              {project.name}
+              {project.title}
             </h3>
             {project.description && (
               <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
@@ -120,7 +125,7 @@ export function ProjectCard({
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
-                {project.name}
+                {project.title}
               </h3>
             </div>
           </Link>
@@ -162,7 +167,7 @@ function ActionMenu({
   isDeleting,
   onDelete,
 }: {
-  project: Project;
+  project: ProjectCardProject;
   isDeleting: boolean;
   onDelete: () => void;
 }) {
@@ -205,7 +210,7 @@ function ActionMenu({
         <AlertDialogHeader>
           <AlertDialogTitle>Удалить проект?</AlertDialogTitle>
           <AlertDialogDescription>
-            Это действие нельзя отменить. Проект &ldquo;{project.name}
+            Это действие нельзя отменить. Проект &ldquo;{project.title}
             &rdquo; и все связанные с ним интервью будут удалены навсегда.
           </AlertDialogDescription>
         </AlertDialogHeader>

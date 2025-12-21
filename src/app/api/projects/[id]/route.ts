@@ -7,7 +7,13 @@ import {
   COOKIE_OPTIONS,
   BACKEND_URL,
   createAuthHeaders,
+  loggedFetch,
+  logError,
+  logRequest,
+  logResponse,
 } from "@/shared/api/bff-utils";
+
+const ROUTE_NAME = "projects/[id]";
 
 /**
  * Попытка обновить access token
@@ -28,6 +34,32 @@ async function tryRefreshToken(
   }
 }
 
+/**
+ * Создает headers для запроса с Bearer token (без Content-Type для FormData)
+ */
+function createBearerHeaders(accessToken?: string): HeadersInit {
+  const headers: HeadersInit = {};
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+  return headers;
+}
+
+/**
+ * Логирует FormData содержимое
+ */
+function logFormData(formData: FormData): Record<string, string> {
+  const formDataLog: Record<string, string> = {};
+  formData.forEach((value, key) => {
+    if (value instanceof File) {
+      formDataLog[key] = `[File: ${value.name}, ${value.size} bytes]`;
+    } else {
+      formDataLog[key] = String(value);
+    }
+  });
+  return formDataLog;
+}
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
@@ -35,7 +67,7 @@ interface RouteParams {
 /**
  * BFF API Route для конкретного проекта
  * GET /api/projects/:id
- * PATCH /api/projects/:id
+ * PATCH /api/projects/:id (добавление файлов - multipart/form-data)
  * DELETE /api/projects/:id
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -52,7 +84,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    let response = await fetch(`${BACKEND_URL}/projects/${id}`, {
+    const url = `${BACKEND_URL}/projects/${id}`;
+
+    let { response, data } = await loggedFetch(url, {
+      route: ROUTE_NAME,
       headers: createAuthHeaders(accessToken),
     });
 
@@ -67,13 +102,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 60 * 24 * 7,
         });
-        response = await fetch(`${BACKEND_URL}/projects/${id}`, {
+        const retryResult = await loggedFetch(url, {
+          route: ROUTE_NAME,
           headers: createAuthHeaders(tokens.access_token),
         });
+        response = retryResult.response;
+        data = retryResult.data;
       }
     }
-
-    const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -81,7 +117,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Get project error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при получении проекта",
@@ -92,6 +128,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+/**
+ * PATCH - добавление файлов к проекту (multipart/form-data)
+ */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -106,12 +145,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const body = await request.json();
+    // Обрабатываем FormData для загрузки файлов
+    const formData = await request.formData();
+    const url = `${BACKEND_URL}/projects/${id}`;
+    const formDataLog = logFormData(formData);
 
-    let response = await fetch(`${BACKEND_URL}/projects/${id}`, {
+    // Manual logging for FormData (can't use loggedFetch easily)
+    const startTime = Date.now();
+    logRequest("PATCH", url, { route: ROUTE_NAME }, formDataLog);
+
+    let response = await fetch(url, {
       method: "PATCH",
-      headers: createAuthHeaders(accessToken),
-      body: JSON.stringify(body),
+      headers: createBearerHeaders(accessToken),
+      body: formData,
     });
 
     if (response.status === 401 && refreshToken) {
@@ -125,15 +171,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 60 * 24 * 7,
         });
-        response = await fetch(`${BACKEND_URL}/projects/${id}`, {
+        response = await fetch(url, {
           method: "PATCH",
-          headers: createAuthHeaders(tokens.access_token),
-          body: JSON.stringify(body),
+          headers: createBearerHeaders(tokens.access_token),
+          body: formData,
         });
       }
     }
 
-    const data = await response.json();
+    const responseText = await response.clone().text();
+    const durationMs = Date.now() - startTime;
+    logResponse("PATCH", url, response.status, durationMs, { route: ROUTE_NAME }, responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      data = responseText;
+    }
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -141,10 +196,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Update project error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
-        message: "Ошибка при обновлении проекта",
+        message: "Ошибка при добавлении файлов",
         detail: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
@@ -166,7 +221,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    let response = await fetch(`${BACKEND_URL}/projects/${id}`, {
+    const url = `${BACKEND_URL}/projects/${id}`;
+
+    let { response, data, responseText } = await loggedFetch(url, {
+      route: ROUTE_NAME,
       method: "DELETE",
       headers: createAuthHeaders(accessToken),
     });
@@ -182,21 +240,24 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
           ...COOKIE_OPTIONS,
           maxAge: 60 * 60 * 24 * 7,
         });
-        response = await fetch(`${BACKEND_URL}/projects/${id}`, {
+        const retryResult = await loggedFetch(url, {
+          route: ROUTE_NAME,
           method: "DELETE",
           headers: createAuthHeaders(tokens.access_token),
         });
+        response = retryResult.response;
+        data = retryResult.data;
+        responseText = retryResult.responseText;
       }
     }
 
     if (!response.ok) {
-      const data = await response.json();
       return NextResponse.json(data, { status: response.status });
     }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Delete project error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при удалении проекта",

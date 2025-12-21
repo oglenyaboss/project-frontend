@@ -2,7 +2,9 @@
  * API функции для Project
  */
 
-import { api, type PaginationParams } from "@/shared/api";
+import { api } from "@/shared/api";
+import { axiosClient } from "@/shared/api/axios-client";
+import type { PaginationParams } from "@/shared/api";
 import type {
   Project,
   ProjectsList,
@@ -36,22 +38,51 @@ export async function getProject(id: number): Promise<Project> {
 }
 
 /**
- * Создать проект
+ * Создать проект (multipart/form-data)
  */
 export async function createProject(
-  data: ProjectCreateRequest
+  data: Omit<ProjectCreateRequest, "files"> & { files?: File[] }
 ): Promise<Project> {
-  return api.post("/projects", data);
+  const formData = new FormData();
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+
+  if (data.files && data.files.length > 0) {
+    data.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  const response = await axiosClient.post<Project>("/projects", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
 }
 
 /**
- * Обновить проект
+ * Добавить файлы к проекту (multipart/form-data)
  */
-export async function updateProject(
+export async function addFilesToProject(
   id: number,
-  data: ProjectUpdateRequest
+  files: File[]
 ): Promise<Project> {
-  return api.patch(`/projects/${id}`, data);
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  const response = await axiosClient.patch<Project>(
+    `/projects/${id}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
 }
 
 /**

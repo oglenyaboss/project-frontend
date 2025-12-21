@@ -7,7 +7,11 @@ import {
   COOKIE_OPTIONS,
   BACKEND_URL,
   createAuthHeaders,
+  loggedFetch,
+  logError,
 } from "@/shared/api/bff-utils";
+
+const ROUTE_NAME = "auth/me";
 
 /**
  * Попытка обновить access token используя refresh token
@@ -18,9 +22,7 @@ async function tryRefreshToken(
   try {
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
@@ -53,8 +55,11 @@ export async function GET() {
       );
     }
 
+    const url = `${BACKEND_URL}/user/me`;
+
     // Пробуем получить пользователя
-    let response = await fetch(`${BACKEND_URL}/user/me`, {
+    let { response, data } = await loggedFetch(url, {
+      route: ROUTE_NAME,
       headers: createAuthHeaders(accessToken),
     });
 
@@ -75,13 +80,14 @@ export async function GET() {
         });
 
         // Повторяем запрос с новым токеном
-        response = await fetch(`${BACKEND_URL}/user/me`, {
+        const retryResult = await loggedFetch(url, {
+          route: ROUTE_NAME,
           headers: createAuthHeaders(tokens.access_token),
         });
+        response = retryResult.response;
+        data = retryResult.data;
       }
     }
-
-    const data = await response.json();
 
     // Если всё равно ошибка — чистим cookies и возвращаем ошибку
     if (!response.ok) {
@@ -94,7 +100,7 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Get user error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при получении данных пользователя",

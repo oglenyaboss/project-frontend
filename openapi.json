@@ -423,9 +423,9 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/ProjectCreate"
+                                "$ref": "#/components/schemas/Body_create_project_projects_post"
                             }
                         }
                     }
@@ -441,16 +441,6 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
                     "401": {
                         "description": "Unauthorized",
                         "content": {
@@ -461,12 +451,22 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Error: Validation Error",
+                    "502": {
+                        "description": "Agent service HTTP error",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/RequestValidationError"
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
                                 }
                             }
                         }
@@ -510,8 +510,8 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "400": {
+                        "description": "You are not owner of this project",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -520,8 +520,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "401": {
+                        "description": "Unauthorized",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -556,8 +556,8 @@
                 "tags": [
                     "projects"
                 ],
-                "summary": "Update Project By Id",
-                "operationId": "update_project_by_id_projects__project_id__patch",
+                "summary": "Add Files To Project By Id",
+                "operationId": "add_files_to_project_by_id_projects__project_id__patch",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -577,11 +577,10 @@
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/ProjectUpdate"
+                                "$ref": "#/components/schemas/Body_add_files_to_project_by_id_projects__project_id__patch"
                             }
                         }
                     }
@@ -598,7 +597,7 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "File field is required | You are not owner of this project| External id for this project not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -720,83 +719,49 @@
                 }
             }
         },
-        "/interviews/projects/{project_id}": {
-            "get": {
+        "/agent/webhook": {
+            "post": {
                 "tags": [
-                    "interviews"
+                    "agent"
                 ],
-                "summary": "Get Interviews List",
-                "operationId": "get_interviews_list_interviews_projects__project_id__get",
-                "security": [
-                    {
-                        "HTTPBearer": []
-                    }
-                ],
+                "summary": "Webhook Update Session",
+                "operationId": "webhook_update_session_agent_webhook_post",
                 "parameters": [
                     {
-                        "name": "project_id",
-                        "in": "path",
+                        "name": "X-Request-ID",
+                        "in": "header",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "description": "The identifier of project",
-                            "title": "Project Id"
-                        },
-                        "description": "The identifier of project"
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ],
-                            "description": "Search string",
-                            "title": "Search"
-                        },
-                        "description": "Search string"
-                    },
-                    {
-                        "name": "offset",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "Offset",
-                            "default": 0,
-                            "title": "Offset"
-                        },
-                        "description": "Offset"
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "maximum": 50,
-                            "exclusiveMinimum": 0,
-                            "description": "Limit",
-                            "default": 10,
-                            "title": "Limit"
-                        },
-                        "description": "Limit"
+                            "type": "string",
+                            "title": "X-Request-Id"
+                        }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AgentCallback"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful Response",
                         "content": {
                             "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/InterviewsGet"
+                                    "$ref": "#/components/schemas/ErrorResponse"
                                 }
                             }
                         }
@@ -811,32 +776,12 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
                     "422": {
-                        "description": "Validation Error",
+                        "description": "Error: Validation Error",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                    "$ref": "#/components/schemas/RequestValidationError"
                                 }
                             }
                         }
@@ -844,13 +789,13 @@
                 }
             }
         },
-        "/interviews/projects/{project_id}/upload": {
+        "/agent/sessions/start/project/{project_id}": {
             "post": {
                 "tags": [
-                    "interviews"
+                    "agent"
                 ],
-                "summary": "Upload File Interview",
-                "operationId": "upload_file_interview_interviews_projects__project_id__upload_post",
+                "summary": "Start Agent Session On Project",
+                "operationId": "start_agent_session_on_project_agent_sessions_start_project__project_id__post",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -870,21 +815,22 @@
                     }
                 ],
                 "requestBody": {
+                    "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Body_upload_file_interview_interviews_projects__project_id__upload_post"
+                                "$ref": "#/components/schemas/SessionStartProjectContextRequest"
                             }
                         }
                     }
                 },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Successful Response",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/InterviewBase"
+                                    "$ref": "#/components/schemas/AgentSessionBase"
                                 }
                             }
                         }
@@ -909,8 +855,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "404": {
+                        "description": "Not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -919,8 +865,8 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Not found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -942,44 +888,36 @@
                 }
             }
         },
-        "/interviews/{interview_id}": {
-            "get": {
+        "/agent/sessions/start/context": {
+            "post": {
                 "tags": [
-                    "interviews"
+                    "agent"
                 ],
-                "summary": "Get Interview By Id",
-                "operationId": "get_interview_by_id_interviews__interview_id__get",
-                "security": [
-                    {
-                        "HTTPBearer": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "interview_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "description": "The identifier of interview",
-                            "title": "Interview Id"
-                        },
-                        "description": "The identifier of interview"
-                    }
-                ],
+                "summary": "Start Agent Session On Context",
+                "operationId": "start_agent_session_on_context_agent_sessions_start_context_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SessionStartManualContextRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Successful Response",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/InterviewBase"
+                                    "$ref": "#/components/schemas/AgentSessionBase"
                                 }
                             }
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "400": {
+                        "description": "Bad Request",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -988,8 +926,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "401": {
+                        "description": "Unauthorized",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1007,6 +945,360 @@
                                 }
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/agent/sessions/{session_id}/answer/{question_id}": {
+            "post": {
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Submit Text Answers",
+                "operationId": "submit_text_answers_agent_sessions__session_id__answer__question_id__post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "The identifier of session",
+                            "title": "Session Id"
+                        },
+                        "description": "The identifier of session"
+                    },
+                    {
+                        "name": "question_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "The identifier of question",
+                            "title": "Question Id"
+                        },
+                        "description": "The identifier of question"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SessionAnswerRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserSessionAnswerShallow"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Answer for this question already exists | Session is not waiting for answers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "You are not owner of this project",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/agent/sessions/{session_id}/cancel": {
+            "post": {
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Cancel Session",
+                "operationId": "cancel_session_agent_sessions__session_id__cancel_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "The identifier of session",
+                            "title": "Session Id"
+                        },
+                        "description": "The identifier of session"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AgentSessionMessageShallow"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/agent/sessions/{session_id}": {
+            "get": {
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Get Session Status",
+                "operationId": "get_session_status_agent_sessions__session_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "The identifier of session",
+                            "title": "Session Id"
+                        },
+                        "description": "The identifier of session"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionStatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/requirements/{requirements_id}": {
+            "get": {
+                "tags": [
+                    "requirements"
+                ],
+                "summary": "Get Requirements",
+                "operationId": "get_requirements_requirements__requirements_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "requirements_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "The identifier of requirements",
+                            "title": "Requirements Id"
+                        },
+                        "description": "The identifier of requirements"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RequirementBase"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     },
                     "422": {
                         "description": "Validation Error",
@@ -1022,10 +1314,10 @@
             },
             "patch": {
                 "tags": [
-                    "interviews"
+                    "requirements"
                 ],
-                "summary": "Update Interview By Id",
-                "operationId": "update_interview_by_id_interviews__interview_id__patch",
+                "summary": "Update Requirements",
+                "operationId": "update_requirements_requirements__requirements_id__patch",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1033,15 +1325,15 @@
                 ],
                 "parameters": [
                     {
-                        "name": "interview_id",
+                        "name": "requirements_id",
                         "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "description": "The identifier of interview",
-                            "title": "Interview Id"
+                            "description": "The identifier of requirements",
+                            "title": "Requirements Id"
                         },
-                        "description": "The identifier of interview"
+                        "description": "The identifier of requirements"
                     }
                 ],
                 "requestBody": {
@@ -1049,7 +1341,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/InterviewUpdate"
+                                "$ref": "#/components/schemas/RequirementUpdate"
                             }
                         }
                     }
@@ -1060,17 +1352,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/InterviewBase"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "$ref": "#/components/schemas/RequirementBase"
                                 }
                             }
                         }
@@ -1085,8 +1367,28 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1106,13 +1408,15 @@
                         }
                     }
                 }
-            },
-            "delete": {
+            }
+        },
+        "/requirements/{requirements_id}/export": {
+            "get": {
                 "tags": [
-                    "interviews"
+                    "requirements"
                 ],
-                "summary": "Delete Interview By Id",
-                "operationId": "delete_interview_by_id_interviews__interview_id__delete",
+                "summary": "Export Requirements",
+                "operationId": "export_requirements_requirements__requirements_id__export_get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1120,38 +1424,35 @@
                 ],
                 "parameters": [
                     {
-                        "name": "interview_id",
+                        "name": "requirements_id",
                         "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "description": "The identifier of interview",
-                            "title": "Interview Id"
+                            "description": "The identifier of session",
+                            "title": "Requirements Id"
                         },
-                        "description": "The identifier of interview"
+                        "description": "The identifier of session"
+                    },
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Export format: 'docx' or 'pdf'",
+                            "default": "docx",
+                            "title": "File"
+                        },
+                        "description": "Export format: 'docx' or 'pdf'"
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Successful Response"
-                    },
-                    "401": {
-                        "description": "Unauthorized",
+                    "200": {
+                        "description": "Successful Response",
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
+                                "schema": {}
                             }
                         }
                     },
@@ -1187,9 +1488,49 @@
     },
     "components": {
         "schemas": {
-            "Body_upload_file_interview_interviews_projects__project_id__upload_post": {
+            "AgentCallback": {
                 "properties": {
-                    "content": {
+                    "event": {
+                        "$ref": "#/components/schemas/SessionCallbackEnum"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Timestamp"
+                    },
+                    "data": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IterationWithQuestions"
+                            },
+                            {
+                                "$ref": "#/components/schemas/SessionDTO"
+                            },
+                            {
+                                "$ref": "#/components/schemas/CallbackProjectUpdatedData"
+                            },
+                            {
+                                "$ref": "#/components/schemas/CallbackErrorData"
+                            }
+                        ],
+                        "title": "Data"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "event",
+                    "timestamp",
+                    "data"
+                ],
+                "title": "AgentCallback"
+            },
+            "AgentSessionBase": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "external_session_id": {
                         "anyOf": [
                             {
                                 "type": "string"
@@ -1198,23 +1539,242 @@
                                 "type": "null"
                             }
                         ],
+                        "title": "External Session Id"
+                    },
+                    "user_goal": {
+                        "type": "string",
+                        "title": "User Goal"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SessionStatusEnum"
+                    },
+                    "current_iteration": {
+                        "type": "integer",
+                        "title": "Current Iteration"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "user_goal",
+                    "status",
+                    "current_iteration"
+                ],
+                "title": "AgentSessionBase"
+            },
+            "AgentSessionMessageShallow": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/SessionMessageRoleEnum"
+                    },
+                    "message_type": {
+                        "$ref": "#/components/schemas/SessionMessageTypeEnum"
+                    },
+                    "content": {
+                        "type": "string",
                         "title": "Content"
                     },
-                    "file": {
+                    "question_external_id": {
+                        "type": "string",
+                        "title": "Question External Id"
+                    },
+                    "question_number": {
                         "anyOf": [
                             {
-                                "type": "string",
-                                "format": "binary"
+                                "type": "integer"
                             },
                             {
                                 "type": "null"
                             }
                         ],
-                        "title": "File"
+                        "title": "Question Number"
+                    },
+                    "question_status": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/QuestionStatusEnum"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "explanation": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Explanation"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
                     }
                 },
                 "type": "object",
-                "title": "Body_upload_file_interview_interviews_projects__project_id__upload_post"
+                "required": [
+                    "id",
+                    "role",
+                    "message_type",
+                    "content",
+                    "question_external_id",
+                    "created_at"
+                ],
+                "title": "AgentSessionMessageShallow"
+            },
+            "AgentSessionStatusEnum": {
+                "type": "string",
+                "enum": [
+                    "ASK_USER_GOAL",
+                    "SELECT_OR_CREATE_PROJECT",
+                    "ASK_USER_CONTEXT",
+                    "CHOOSE_MODE",
+                    "WAITING_FOR_ANSWERS",
+                    "DRAFT_COLLECTING",
+                    "VALIDATING",
+                    "GENERATING_REQUIREMENTS",
+                    "DONE",
+                    "CANCELLED",
+                    "ERROR"
+                ],
+                "title": "AgentSessionStatusEnum"
+            },
+            "Body_add_files_to_project_by_id_projects__project_id__patch": {
+                "properties": {
+                    "files": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Files"
+                    }
+                },
+                "type": "object",
+                "title": "Body_add_files_to_project_by_id_projects__project_id__patch"
+            },
+            "Body_create_project_projects_post": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description"
+                    },
+                    "files": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Files"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "title",
+                    "description"
+                ],
+                "title": "Body_create_project_projects_post"
+            },
+            "CallbackErrorData": {
+                "properties": {
+                    "error": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Error"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "error"
+                ],
+                "title": "CallbackErrorData"
+            },
+            "CallbackProjectUpdatedData": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "title": "Size"
+                    },
+                    "files": {
+                        "items": {
+                            "additionalProperties": true,
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Files"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "size",
+                    "files"
+                ],
+                "title": "CallbackProjectUpdatedData"
+            },
+            "ContextQuestion": {
+                "properties": {
+                    "task": {
+                        "type": "string",
+                        "title": "Task"
+                    },
+                    "goal": {
+                        "type": "string",
+                        "title": "Goal"
+                    },
+                    "value": {
+                        "type": "string",
+                        "title": "Value"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "task",
+                    "goal",
+                    "value"
+                ],
+                "title": "ContextQuestion"
             },
             "ErrorResponse": {
                 "properties": {
@@ -1247,40 +1807,21 @@
                 "type": "object",
                 "title": "HTTPValidationError"
             },
-            "InterviewBase": {
+            "IterationWithQuestions": {
                 "properties": {
-                    "id": {
+                    "session_id": {
+                        "type": "string",
+                        "title": "Session Id"
+                    },
+                    "iteration_id": {
+                        "type": "string",
+                        "title": "Iteration Id"
+                    },
+                    "iteration_number": {
                         "type": "integer",
-                        "title": "Id"
+                        "title": "Iteration Number"
                     },
-                    "name": {
-                        "type": "string",
-                        "title": "Name"
-                    },
-                    "type": {
-                        "$ref": "#/components/schemas/InterviewTypeEnum"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/InterviewStatusEnum"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "title": "Created At"
-                    },
-                    "updated_at": {
-                        "anyOf": [
-                            {
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Updated At"
-                    },
-                    "content": {
+                    "title": {
                         "anyOf": [
                             {
                                 "type": "string"
@@ -1289,138 +1830,24 @@
                                 "type": "null"
                             }
                         ],
-                        "title": "Content"
+                        "title": "Title"
                     },
-                    "file_path": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "File Path"
-                    },
-                    "project": {
-                        "$ref": "#/components/schemas/ProjectBase"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "name",
-                    "type",
-                    "status",
-                    "created_at",
-                    "updated_at",
-                    "project"
-                ],
-                "title": "InterviewBase"
-            },
-            "InterviewShallow": {
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "title": "Id"
-                    },
-                    "name": {
-                        "type": "string",
-                        "title": "Name"
-                    },
-                    "type": {
-                        "$ref": "#/components/schemas/InterviewTypeEnum"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/InterviewStatusEnum"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "title": "Created At"
-                    },
-                    "updated_at": {
-                        "anyOf": [
-                            {
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Updated At"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "name",
-                    "type",
-                    "status",
-                    "created_at",
-                    "updated_at"
-                ],
-                "title": "InterviewShallow"
-            },
-            "InterviewStatusEnum": {
-                "type": "string",
-                "enum": [
-                    "uploaded",
-                    "processing",
-                    "question",
-                    "done",
-                    "error",
-                    "cancelled"
-                ],
-                "title": "InterviewStatusEnum"
-            },
-            "InterviewTypeEnum": {
-                "type": "string",
-                "enum": [
-                    "text",
-                    "text_file",
-                    "audio"
-                ],
-                "title": "InterviewTypeEnum"
-            },
-            "InterviewUpdate": {
-                "properties": {
-                    "name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Name"
-                    }
-                },
-                "type": "object",
-                "title": "InterviewUpdate"
-            },
-            "InterviewsGet": {
-                "properties": {
-                    "items": {
+                    "questions": {
                         "items": {
-                            "$ref": "#/components/schemas/InterviewShallow"
+                            "$ref": "#/components/schemas/QuestionData"
                         },
                         "type": "array",
-                        "title": "Items"
-                    },
-                    "total": {
-                        "type": "integer",
-                        "title": "Total"
+                        "title": "Questions"
                     }
                 },
                 "type": "object",
                 "required": [
-                    "items",
-                    "total"
+                    "session_id",
+                    "iteration_id",
+                    "iteration_number",
+                    "questions"
                 ],
-                "title": "InterviewsGet"
+                "title": "IterationWithQuestions"
             },
             "Login": {
                 "properties": {
@@ -1447,11 +1874,7 @@
                         "type": "integer",
                         "title": "Id"
                     },
-                    "name": {
-                        "type": "string",
-                        "title": "Name"
-                    },
-                    "description": {
+                    "external_id": {
                         "anyOf": [
                             {
                                 "type": "string"
@@ -1460,7 +1883,107 @@
                                 "type": "null"
                             }
                         ],
+                        "title": "External Id"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ProjectStatusEnum"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "description": {
+                        "type": "string",
                         "title": "Description"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "updated_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Updated At"
+                    },
+                    "files": {
+                        "items": {
+                            "$ref": "#/components/schemas/ProjectFileBase"
+                        },
+                        "type": "array",
+                        "title": "Files",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "status",
+                    "title",
+                    "description",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "ProjectBase"
+            },
+            "ProjectFileBase": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "title": "File Path"
+                    },
+                    "original_name": {
+                        "type": "string",
+                        "title": "Original Name"
+                    },
+                    "file_size": {
+                        "type": "integer",
+                        "title": "File Size"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "title": "Mime Type"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "file_path",
+                    "original_name",
+                    "file_size",
+                    "mime_type",
+                    "created_at"
+                ],
+                "title": "ProjectFileBase"
+            },
+            "ProjectShallow": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ProjectStatusEnum"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
                     },
                     "created_at": {
                         "type": "string",
@@ -1483,72 +2006,26 @@
                 "type": "object",
                 "required": [
                     "id",
-                    "name",
-                    "description",
+                    "status",
+                    "title",
                     "created_at",
                     "updated_at"
                 ],
-                "title": "ProjectBase"
+                "title": "ProjectShallow"
             },
-            "ProjectCreate": {
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "maxLength": 50,
-                        "minLength": 4,
-                        "title": "Name"
-                    },
-                    "description": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Description"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "name"
+            "ProjectStatusEnum": {
+                "type": "string",
+                "enum": [
+                    "active",
+                    "finished"
                 ],
-                "title": "ProjectCreate"
-            },
-            "ProjectUpdate": {
-                "properties": {
-                    "name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Name"
-                    },
-                    "description": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Description"
-                    }
-                },
-                "type": "object",
-                "title": "ProjectUpdate"
+                "title": "ProjectStatusEnum"
             },
             "ProjectsGet": {
                 "properties": {
                     "items": {
                         "items": {
-                            "$ref": "#/components/schemas/ProjectBase"
+                            "$ref": "#/components/schemas/ProjectShallow"
                         },
                         "type": "array",
                         "title": "Items"
@@ -1564,6 +2041,55 @@
                     "total"
                 ],
                 "title": "ProjectsGet"
+            },
+            "QuestionData": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id",
+                        "description": "UUID вопроса от агента"
+                    },
+                    "question_number": {
+                        "type": "integer",
+                        "title": "Question Number"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "question": {
+                        "type": "string",
+                        "title": "Question"
+                    },
+                    "explanation": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Explanation"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "question_number",
+                    "status",
+                    "question"
+                ],
+                "title": "QuestionData"
+            },
+            "QuestionStatusEnum": {
+                "type": "string",
+                "enum": [
+                    "unanswered",
+                    "answered",
+                    "skipped"
+                ],
+                "title": "QuestionStatusEnum"
             },
             "RefreshToken": {
                 "properties": {
@@ -1666,6 +2192,243 @@
                 ],
                 "title": "RequestValidationErrorBase"
             },
+            "RequirementBase": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "content": {
+                        "type": "string",
+                        "title": "Content"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "content",
+                    "created_at"
+                ],
+                "title": "RequirementBase"
+            },
+            "RequirementUpdate": {
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "title": "Content"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "content"
+                ],
+                "title": "RequirementUpdate"
+            },
+            "SessionAnswerRequest": {
+                "properties": {
+                    "answer": {
+                        "type": "string",
+                        "title": "Answer"
+                    },
+                    "is_skipped": {
+                        "type": "boolean",
+                        "title": "Is Skipped",
+                        "default": false
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "answer"
+                ],
+                "title": "SessionAnswerRequest"
+            },
+            "SessionCallbackEnum": {
+                "type": "string",
+                "enum": [
+                    "questions",
+                    "finalResult",
+                    "projectUpdated",
+                    "error"
+                ],
+                "title": "SessionCallbackEnum"
+            },
+            "SessionDTO": {
+                "properties": {
+                    "session_id": {
+                        "type": "string",
+                        "title": "Session Id"
+                    },
+                    "project_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Project Id"
+                    },
+                    "session_status": {
+                        "$ref": "#/components/schemas/AgentSessionStatusEnum"
+                    },
+                    "iteration_number": {
+                        "type": "integer",
+                        "title": "Iteration Number"
+                    },
+                    "final_result": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Final Result"
+                    },
+                    "error": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Updated At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "session_id",
+                    "session_status",
+                    "iteration_number",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "SessionDTO"
+            },
+            "SessionMessageRoleEnum": {
+                "type": "string",
+                "enum": [
+                    "agent",
+                    "user"
+                ],
+                "title": "SessionMessageRoleEnum"
+            },
+            "SessionMessageTypeEnum": {
+                "type": "string",
+                "enum": [
+                    "question",
+                    "answer",
+                    "result"
+                ],
+                "title": "SessionMessageTypeEnum"
+            },
+            "SessionStartManualContextRequest": {
+                "properties": {
+                    "user_goal": {
+                        "type": "string",
+                        "title": "User Goal"
+                    },
+                    "context_questions": {
+                        "$ref": "#/components/schemas/ContextQuestion"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "user_goal",
+                    "context_questions"
+                ],
+                "title": "SessionStartManualContextRequest"
+            },
+            "SessionStartProjectContextRequest": {
+                "properties": {
+                    "user_goal": {
+                        "type": "string",
+                        "title": "User Goal"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "user_goal"
+                ],
+                "title": "SessionStartProjectContextRequest"
+            },
+            "SessionStatusEnum": {
+                "type": "string",
+                "enum": [
+                    "processing",
+                    "waiting_for_answers",
+                    "done",
+                    "error",
+                    "cancelled"
+                ],
+                "title": "SessionStatusEnum"
+            },
+            "SessionStatusResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "external_session_id": {
+                        "type": "string",
+                        "title": "External Session Id"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SessionStatusEnum"
+                    },
+                    "user_goal": {
+                        "type": "string",
+                        "title": "User Goal"
+                    },
+                    "current_iteration": {
+                        "type": "integer",
+                        "title": "Current Iteration"
+                    },
+                    "messages": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "$ref": "#/components/schemas/AgentSessionMessageShallow"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Messages",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "external_session_id",
+                    "status",
+                    "user_goal",
+                    "current_iteration"
+                ],
+                "title": "SessionStatusResponse"
+            },
             "Token": {
                 "properties": {
                     "access_token": {
@@ -1731,6 +2494,38 @@
                     "updated_at"
                 ],
                 "title": "UserBase"
+            },
+            "UserSessionAnswerShallow": {
+                "properties": {
+                    "role": {
+                        "$ref": "#/components/schemas/SessionMessageRoleEnum"
+                    },
+                    "message_type": {
+                        "$ref": "#/components/schemas/SessionMessageTypeEnum"
+                    },
+                    "content": {
+                        "type": "string",
+                        "title": "Content"
+                    },
+                    "is_skipped": {
+                        "type": "boolean",
+                        "title": "Is Skipped"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "role",
+                    "message_type",
+                    "content",
+                    "is_skipped",
+                    "created_at"
+                ],
+                "title": "UserSessionAnswerShallow"
             },
             "UserUpdate": {
                 "properties": {

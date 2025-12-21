@@ -12,3 +12,4 @@ export type { PaginationParams, QueryKeys } from "./query-keys";
 
 // Types
 export * from "./types";
+export { agentApi } from "./agent-api";

@@ -3,7 +3,10 @@
  */
 
 export type {
+  ProjectStatus,
+  ProjectFileBase,
   Project,
+  ProjectShallow,
   ProjectsList,
   ProjectCreateRequest,
   ProjectUpdateRequest,

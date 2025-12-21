@@ -6,7 +6,11 @@ import {
   REFRESH_TOKEN_COOKIE,
   COOKIE_OPTIONS,
   BACKEND_URL,
+  loggedFetch,
+  logError,
 } from "@/shared/api/bff-utils";
+
+const ROUTE_NAME = "auth/refresh";
 
 /**
  * BFF API Route для обновления токенов
@@ -26,16 +30,18 @@ export async function POST() {
       );
     }
 
-    // Запрос к бэкенду
-    const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    });
+    const url = `${BACKEND_URL}/auth/refresh`;
 
-    const data = await response.json();
+    const { response, data } = await loggedFetch(
+      url,
+      {
+        route: ROUTE_NAME,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      },
+      { refresh_token: "[REDACTED]" }
+    );
 
     // Если ошибка — удаляем cookies и возвращаем ошибку
     if (!response.ok) {
@@ -44,20 +50,22 @@ export async function POST() {
       return NextResponse.json(data, { status: response.status });
     }
 
+    const tokenData = data as { access_token: string; refresh_token: string };
+
     // Обновляем cookies с новыми токенами
-    cookieStore.set(ACCESS_TOKEN_COOKIE, data.access_token, {
+    cookieStore.set(ACCESS_TOKEN_COOKIE, tokenData.access_token, {
       ...COOKIE_OPTIONS,
       maxAge: 60 * 15,
     });
 
-    cookieStore.set(REFRESH_TOKEN_COOKIE, data.refresh_token, {
+    cookieStore.set(REFRESH_TOKEN_COOKIE, tokenData.refresh_token, {
       ...COOKIE_OPTIONS,
       maxAge: 60 * 60 * 24 * 7,
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Refresh token error:", error);
+    logError(ROUTE_NAME, error);
     return NextResponse.json(
       {
         message: "Ошибка при обновлении токена",
