@@ -4,20 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { UserDropdown } from "@/features/user-dropdown";
 import {
     Loader2,
     Sparkles,
     ArrowRight,
     Target,
-    Briefcase,
-    Lightbulb,
+    ArrowLeft,
 } from "lucide-react";
 
 import {
     Button,
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -27,7 +27,6 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/shared/ui";
@@ -68,11 +67,28 @@ export default function AgentContextPage() {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <header className="sticky top-0 z-50 glass border-b">
-                <div className="container flex h-16 items-center px-4">
-                    <div className="flex items-center gap-2 font-semibold">
-                        <Sparkles className="w-5 h-5 text-primary" />
-                        <span>AI Agent Analysis</span>
+            <header className="sticky top-0 z-50 glass border-b transition-all duration-300">
+                <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            className="rounded-lg hover:bg-primary/10"
+                        >
+                            <Link href="/dashboard">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Link>
+                        </Button>
+                        <div className="w-9 h-9 rounded-xl gradient-sber flex items-center justify-center shadow-sber">
+                            <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="font-semibold text-lg tracking-tight hidden sm:inline-block">
+                            Сбер Требования
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <UserDropdown />
                     </div>
                 </div>
             </header>

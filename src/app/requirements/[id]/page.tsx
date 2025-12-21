@@ -13,7 +13,6 @@ import {
     CheckCircle,
     Eye,
     Columns,
-    Maximize2
 } from "lucide-react";
 
 import {
@@ -144,11 +143,11 @@ export default function RequirementsPage({ params }: Props) {
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
-                        <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center">
-                            <CheckCircle className="w-5 h-5 text-green-500" />
+                        <div className="w-9 h-9 rounded-xl gradient-sber flex items-center justify-center shadow-sber">
+                            <CheckCircle className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="font-semibold text-base">Бизнес-требования</h1>
+                            <h1 className="font-semibold text-base tracking-tight">Бизнес-требования</h1>
                             <p className="text-xs text-muted-foreground font-mono">
                                 ID: {requirementsId} • {new Date(requirement.created_at).toLocaleDateString("ru-RU")}
                             </p>

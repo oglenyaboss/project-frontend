@@ -8,7 +8,7 @@ import {
   LayoutGrid,
   List,
   Users,
-  FileAudio,
+  FileText,
   Clock,
 } from "lucide-react";
 
@@ -27,28 +27,28 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: "Всего проектов",
+      label: "Активные проекты",
       value: projects.length,
       icon: FolderOpen,
       color: "text-primary",
       bgColor: "bg-primary/10",
     },
     {
-      label: "Интервью",
+      label: "Требования",
       value: "—",
-      icon: FileAudio,
+      icon: FileText,
       color: "text-info",
       bgColor: "bg-info/10",
     },
     {
-      label: "Участников",
+      label: "Команда",
       value: "—",
       icon: Users,
       color: "text-warning",
       bgColor: "bg-warning/10",
     },
     {
-      label: "Часов записей",
+      label: "Часов экономии",
       value: "—",
       icon: Clock,
       color: "text-chart-4",
@@ -76,8 +76,8 @@ export default function DashboardPage() {
                 <path d="M2 12l10 5 10-5" />
               </svg>
             </div>
-            <span className="font-semibold text-lg hidden sm:inline-block">
-              Сбер Интервью
+            <span className="font-semibold text-lg hidden sm:inline-block tracking-tight">
+              Сбер Требования
             </span>
           </div>
 
@@ -99,10 +99,10 @@ export default function DashboardPage() {
         {/* Welcome section */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Добро пожаловать 👋
+            Рабочее пространство 👋
           </h1>
           <p className="text-muted-foreground text-lg">
-            Управляйте проектами и интервью в одном месте
+            Ваши проекты и требования в одном месте
           </p>
         </div>
 
@@ -111,12 +111,12 @@ export default function DashboardPage() {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="rounded-2xl border bg-card p-5 shadow-premium hover:shadow-premium-lg transition-shadow"
+              className="rounded-2xl border bg-card p-5 shadow-premium hover:shadow-premium-lg transition-all duration-300 hover:-translate-y-1"
             >
               <div className="flex items-center gap-4">
                 <div
                   className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center",
+                    "w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300",
                     stat.bgColor
                   )}
                 >
@@ -124,7 +124,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
                 </div>
               </div>
             </div>
