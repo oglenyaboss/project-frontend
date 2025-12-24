@@ -223,7 +223,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const url = `${BACKEND_URL}/projects/${id}`;
 
-    let { response, data, responseText } = await loggedFetch(url, {
+    let { response, data } = await loggedFetch(url, {
       route: ROUTE_NAME,
       method: "DELETE",
       headers: createAuthHeaders(accessToken),
@@ -247,7 +247,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
         response = retryResult.response;
         data = retryResult.data;
-        responseText = retryResult.responseText;
       }
     }
 

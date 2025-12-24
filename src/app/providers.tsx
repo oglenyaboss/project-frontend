@@ -12,6 +12,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { getQueryClient } from "@/shared/api/query-client";
 import { Toaster } from "@/shared/ui";
+import { AuthListener } from "@/shared/lib/auth-listener";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ export function Providers({ children }: ProvidersProps) {
       {children}
       <Toaster richColors position="top-right" />
       <ReactQueryDevtools initialIsOpen={false} />
+      <AuthListener />
     </QueryClientProvider>
   );
 }

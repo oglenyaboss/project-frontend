@@ -28,7 +28,9 @@ export const COOKIE_OPTIONS = {
 
 // Backend API URL
 export const BACKEND_URL =
-  process.env.BACKEND_API_URL || "http://93.189.230.54:8080";
+  process.env.BACKEND_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://93.189.230.54:8080";
 
 /**
  * Создает headers для запроса к бэкенду с Authorization

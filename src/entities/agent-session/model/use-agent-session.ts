@@ -60,7 +60,7 @@ export function useAgentSession(
     const sendPing = useCallback(() => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send("ping");
-            console.log("[WS] Sent ping");
+            // console.log("[WS] Sent ping");
         }
     }, []);
 
@@ -117,20 +117,20 @@ export function useAgentSession(
 
             try {
                 const wsUrl = `${WS_URL}/sessions/${sessionId}`;
-                console.log(`[WS] Connecting to ${wsUrl}`);
+                // console.log(`[WS] Connecting to ${wsUrl}`);
                 const ws = new WebSocket(wsUrl);
 
                 ws.onopen = () => {
                     isConnectingRef.current = false;
                     setIsConnected(true);
                     setError(null);
-                    console.log(`[WS] Connected to session ${sessionId}`);
+                    // console.log(`[WS] Connected to session ${sessionId}`);
 
                     // Send initial ping to get session info
                     setTimeout(() => {
                         if (ws.readyState === WebSocket.OPEN) {
                             ws.send("ping");
-                            console.log("[WS] Sent initial ping");
+                            // console.log("[WS] Sent initial ping");
                         }
                     }, 100);
 
@@ -138,7 +138,7 @@ export function useAgentSession(
                     pingIntervalRef.current = setInterval(() => {
                         if (ws.readyState === WebSocket.OPEN) {
                             ws.send("ping");
-                            console.log("[WS] Sent periodic ping");
+                            // console.log("[WS] Sent periodic ping");
                         }
                     }, PING_INTERVAL);
                 };
@@ -146,7 +146,7 @@ export function useAgentSession(
                 ws.onmessage = (event) => {
                     try {
                         const data = JSON.parse(event.data) as WsSessionResponse;
-                        console.log("[WS] Received:", data);
+                        // console.log("[WS] Received:", data);
 
                         setLastMessage(data);
                         optionsRef.current.onMessage?.(data);
@@ -194,7 +194,7 @@ export function useAgentSession(
                 ws.onclose = (event) => {
                     isConnectingRef.current = false;
                     setIsConnected(false);
-                    console.log(`[WS] Disconnected from session ${sessionId}, code: ${event.code}`);
+                    // console.log(`[WS] Disconnected from session ${sessionId}, code: ${event.code}`);
 
                     // Clear ping interval
                     if (pingIntervalRef.current) {

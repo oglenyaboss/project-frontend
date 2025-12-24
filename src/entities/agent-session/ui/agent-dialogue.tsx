@@ -28,15 +28,41 @@ export function AgentDialogue({
     className,
 }: AgentDialogueProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const prevDialogueLengthRef = useRef<number>(0);
+    const userHasScrolledRef = useRef<boolean>(false);
 
-    // Auto-scroll to bottom
+    // Track user scroll to disable auto-scroll when user is reading history
     useEffect(() => {
-        if (scrollRef.current) {
-            const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-            if (scrollContainer) {
-                scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+        const scrollContainer = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (!scrollContainer) return;
+
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = scrollContainer as HTMLElement;
+            // If user scrolled up more than 100px from bottom, mark as user-scrolled
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+            userHasScrolledRef.current = !isNearBottom;
+        };
+
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Auto-scroll to bottom only when new dialogue items are added
+    useEffect(() => {
+        const newLength = dialogue.length;
+        const prevLength = prevDialogueLengthRef.current;
+
+        // Only scroll if new items were added AND user hasn't scrolled up
+        if (newLength > prevLength && !userHasScrolledRef.current) {
+            if (scrollRef.current) {
+                const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+                if (scrollContainer) {
+                    scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+                }
             }
         }
+
+        prevDialogueLengthRef.current = newLength;
     }, [dialogue]);
 
     // Find the last unanswered question
@@ -60,7 +86,7 @@ export function AgentDialogue({
     };
 
     return (
-        <div className={cn("flex flex-col h-[600px] border rounded-xl overflow-hidden bg-muted/30", className)}>
+        <div className={cn("flex flex-col h-[calc(100vh-300px)] min-h-[500px] border rounded-xl overflow-hidden bg-muted/30", className)}>
             <div className="p-4 border-b bg-background/50 backdrop-blur-sm z-10">
                 <h3 className="font-semibold flex items-center gap-2">
                     <motion.div

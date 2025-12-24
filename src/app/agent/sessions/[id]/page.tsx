@@ -55,10 +55,10 @@ export default function AgentSessionPage({ params }: Props) {
     } = useAgentSession(sessionId, {
         enabled: true,
         onStatusChange: (status) => {
-            console.log("Status changed:", status);
+            // console.log("Status changed:", status);
         },
         onResult: (res) => {
-            console.log("Result received:", res);
+            // console.log("Result received:", res);
         },
     });
 
