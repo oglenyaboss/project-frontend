@@ -26,11 +26,12 @@ export const COOKIE_OPTIONS = {
   path: "/",
 };
 
+import { env } from "@/shared/config/env";
+
+// ...
+
 // Backend API URL
-export const BACKEND_URL =
-  process.env.BACKEND_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://93.189.230.54:8080";
+export const BACKEND_URL = env.BACKEND_API_URL || env.NEXT_PUBLIC_API_URL;
 
 /**
  * Создает headers для запроса к бэкенду с Authorization
@@ -72,7 +73,7 @@ export interface BackendValidationError {
 export async function loggedFetch(
   url: string,
   options: RequestInit & { route: string },
-  requestBody?: unknown
+  requestBody?: unknown,
 ): Promise<{ response: Response; data: unknown; responseText: string }> {
   const { route, ...fetchOptions } = options;
   const method = fetchOptions.method || "GET";
@@ -94,7 +95,14 @@ export async function loggedFetch(
   }
 
   // Log response
-  logResponse(method, url, response.status, durationMs, { route, logResponse: true }, responseText);
+  logResponse(
+    method,
+    url,
+    response.status,
+    durationMs,
+    { route, logResponse: true },
+    responseText,
+  );
 
   return { response, data, responseText };
 }
