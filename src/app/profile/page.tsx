@@ -15,6 +15,7 @@ import {
   Shield,
   LogOut,
   Pencil,
+  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ import {
   Avatar,
   AvatarFallback,
   Badge,
+  ThemeToggle,
 } from "@/shared/ui";
 import { useCurrentUser, useUpdateUser } from "@/entities/user";
 import { useAuthStore } from "@/shared/store";
@@ -292,6 +294,25 @@ export default function ProfilePage() {
                 </Button>
               </form>
             </Form>
+          </div>
+
+          {/* Appearance */}
+          <div className="rounded-xl border bg-card p-6 shadow-premium mb-6 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <Moon className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div>
+                <h2 className="font-semibold">Внешний вид</h2>
+                <p className="text-sm text-muted-foreground">
+                  Настройте тему оформления
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Тема приложения</span>
+              <ThemeToggle />
+            </div>
           </div>
 
           {/* Logout */}

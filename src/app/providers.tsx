@@ -7,6 +7,8 @@
  * - Toaster (sonner)
  */
 
+import { ThemeProvider } from "next-themes";
+
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
@@ -23,10 +25,17 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
-      <Toaster richColors position="top-right" />
-      <ReactQueryDevtools initialIsOpen={false} />
-      <AuthListener />
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+        <Toaster richColors position="top-right" />
+        <ReactQueryDevtools initialIsOpen={false} />
+        <AuthListener />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -12,7 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { Button } from "@/shared/ui";
+import { Button, ThemeToggle } from "@/shared/ui";
 import { cn } from "@/shared/lib";
 
 const features = [
@@ -27,8 +27,7 @@ const features = [
   {
     icon: BrainCircuit,
     title: "AI Структурирование",
-    description:
-      "Превращение хаотичных заметок в четкую структуру требований",
+    description: "Превращение хаотичных заметок в четкую структуру требований",
     color: "text-warning",
     bgColor: "bg-warning/10",
   },
@@ -49,8 +48,7 @@ const features = [
   {
     icon: Shield,
     title: "Безопасность",
-    description:
-      "Защищенное хранение конфиденциальных данных проекта",
+    description: "Защищенное хранение конфиденциальных данных проекта",
     color: "text-success",
     bgColor: "bg-success/10",
   },
@@ -90,14 +88,24 @@ export default function Home() {
                 <path d="M2 12l10 5 10-5" />
               </svg>
             </div>
-            <span className="font-semibold text-lg tracking-tight">Сбер Требования</span>
+            <span className="font-semibold text-lg tracking-tight">
+              Сбер Требования
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild className="hidden sm:flex hover:bg-primary/5">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              asChild
+              className="hidden sm:flex hover:bg-primary/5"
+            >
               <Link href="/login">Войти</Link>
             </Button>
-            <Button asChild className="shadow-sber hover:shadow-sber-lg transition-all duration-300">
+            <Button
+              asChild
+              className="shadow-sber hover:shadow-sber-lg transition-all duration-300"
+            >
               <Link href="/register">
                 Начать бесплатно
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -123,12 +131,15 @@ export default function Home() {
 
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight mb-8 leading-tight">
               Веб-сервис для работы с{" "}
-              <span className="gradient-sber-text">интервью и бизнес-требованиями</span>
+              <span className="gradient-sber-text">
+                интервью и бизнес-требованиями
+              </span>
             </h1>
 
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
               Превращайте записи интервью в структурированные бизнес-требования,
-              технические задания и спецификации с помощью искусственного интеллекта.
+              технические задания и спецификации с помощью искусственного
+              интеллекта.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -166,11 +177,17 @@ export default function Home() {
         <div className="container px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+              <div
+                key={index}
+                className="text-center animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 <p className="text-4xl sm:text-5xl font-bold gradient-sber-text mb-2 tracking-tight">
                   {stat.value}
                 </p>
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  {stat.label}
+                </p>
               </div>
             ))}
           </div>
@@ -198,13 +215,15 @@ export default function Home() {
                 <div
                   className={cn(
                     "w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110",
-                    feature.bgColor
+                    feature.bgColor,
                   )}
                 >
                   <feature.icon className={cn("w-7 h-7", feature.color)} />
                 </div>
                 <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             ))}
           </div>
@@ -258,17 +277,28 @@ export default function Home() {
                   <path d="M2 12l10 5 10-5" />
                 </svg>
               </div>
-              <span className="font-semibold text-foreground/80">Сбер Требования</span>
+              <span className="font-semibold text-foreground/80">
+                Сбер Требования
+              </span>
             </div>
 
             <div className="flex items-center gap-8 text-sm font-medium text-muted-foreground">
-              <Link href="/privacy" className="hover:text-primary transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-primary transition-colors"
+              >
                 Конфиденциальность
               </Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">
+              <Link
+                href="/terms"
+                className="hover:text-primary transition-colors"
+              >
                 Условия
               </Link>
-              <Link href="/support" className="hover:text-primary transition-colors">
+              <Link
+                href="/support"
+                className="hover:text-primary transition-colors"
+              >
                 Поддержка
               </Link>
             </div>

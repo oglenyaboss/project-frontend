@@ -26,4 +26,5 @@ export * from "./slider";
 export * from "./sonner";
 export * from "./textarea";
 export * from "./tooltip";
+export * from "./theme-toggle";
 export * from "./form";

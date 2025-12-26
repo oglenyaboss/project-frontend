@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  ThemeToggle,
 } from "@/shared/ui";
 import { agentApi } from "@/shared/api";
 import { useAgentSession, AgentDialogue } from "@/entities/agent-session";
