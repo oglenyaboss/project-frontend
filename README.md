@@ -1,152 +1,97 @@
-# Project Frontend
+# CJM Platform — Frontend
 
-Современное Next.js приложение с архитектурой **Feature-Sliced Design (FSD)**.
-
-## 🏗️ Архитектура
-
-Проект построен на базе методологии **Feature-Sliced Design** - архитектурного подхода для масштабируемых фронтенд приложений.
-
-```
-src/
-├── app/          # Pages & routing (Next.js App Router)
-├── widgets/      # Composite UI blocks
-├── features/     # User interactions & features
-├── entities/     # Business entities
-└── shared/       # Reusable code (UI, utils, hooks)
-```
-
-📖 Подробнее об архитектуре: [ARCHITECTURE.md](./ARCHITECTURE.md)
+Веб-приложение для автоматизированного анализа бизнес-требований с использованием AI-агента.
 
 ## 🚀 Быстрый старт
 
-### Установка зависимостей
-
 ```bash
+# Установка зависимостей
 npm install
-```
 
-### Запуск dev сервера
-
-```bash
+# Запуск dev сервера
 npm run dev
+
+# Production сборка
+npm run build
+
+# Запуск production сервера
+npm run start
 ```
 
 Откройте [http://localhost:3000](http://localhost:3000) для просмотра.
 
-### Сборка проекта
+## 🛠️ Технологический стек
 
-```bash
-npm run build
+| Категория | Технологии |
+|-----------|------------|
+| **Фреймворк** | Next.js 15, TypeScript |
+| **Стилизация** | Tailwind CSS 4, Radix UI, shadcn/ui |
+| **State** | Zustand, TanStack Query |
+| **Формы** | react-hook-form + zod |
+| **Тестирование** | Vitest, Testing Library |
+| **CI/CD** | GitHub Actions, Docker |
+
+## 🏗️ Архитектура
+
+Проект построен на методологии **Feature-Sliced Design (FSD)**:
+
 ```
-
-### Запуск production
-
-```bash
-npm run start
+src/
+├── app/          # Страницы и роутинг (Next.js App Router)
+├── widgets/      # Композитные UI-блоки
+├── features/     # Пользовательские действия
+├── entities/     # Бизнес-сущности
+└── shared/       # Переиспользуемый код (UI, hooks, lib, store)
 ```
-
-Вы можете начать редактировать страницы в `src/app/page.tsx`. Изменения применяются автоматически.
-
-## 📚 Документация
-
-- [AGENTS.md](./AGENTS.md) - **Справочник для AI-агентов** (полная документация проекта)
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Визуальные схемы архитектуры и правила
-- [FSD-STRUCTURE.md](./FSD-STRUCTURE.md) - Детальное описание структуры проекта
-- [BFF.md](./BFF.md) - Backend For Frontend архитектура и API
-- [ZUSTAND.md](./ZUSTAND.md) - State Management с Zustand (примеры и best practices)
-- [EXAMPLES.md](./EXAMPLES.md) - Примеры создания features, widgets, entities
-- [MIGRATION-REPORT.md](./MIGRATION-REPORT.md) - Отчёт о миграции на FSD
-
-## 🛠️ Стек технологий
-
-- **Next.js 15** - React фреймворк с App Router
-- **TypeScript** - Статическая типизация
-- **Tailwind CSS** - Utility-first CSS фреймворк
-- **Radix UI** - Headless UI компоненты
-- **shadcn/ui** - Коллекция переиспользуемых компонентов
-- **Zustand** - State management (легковесная альтернатива Redux)
-- **react-hook-form + zod** - Управление формами и валидация
-- **Feature-Sliced Design** - Архитектурная методология
-
-## 📁 Структура импортов
-
-```typescript
-// Shared layer (доступен везде)
-import { Button, Input, Dialog } from "@/shared/ui";
-import { cn } from "@/shared/lib";
-import { useIsMobile } from "@/shared/hooks";
-import { useAuthStore } from "@/shared/store"; // Zustand stores
-
-// Features (функциональность)
-import { ChatMessage } from "@/features/chat-message";
-import { UserDropdown } from "@/features/user-dropdown";
-
-// Widgets (композитные блоки)
-import { Chat } from "@/widgets/chat";
-import { AppSidebar } from "@/widgets/app-sidebar";
-```
-
-## 🎯 Основные концепции FSD
-
-### Слои (Layers)
-
-Каждый слой имеет свою зону ответственности:
-
-- **app** - инициализация, роутинг, провайдеры
-- **widgets** - большие композитные блоки
-- **features** - конкретные пользовательские действия
-- **entities** - бизнес-сущности
-- **shared** - переиспользуемый код
-
-### Правила
-
-1. Верхние слои могут импортировать только из нижних
-2. Слои одного уровня не могут импортировать друг друга
-3. Каждый модуль имеет Public API через `index.ts`
-
-## 🔄 Добавление нового функционала
-
-### Новая feature
-
-```bash
-mkdir -p src/features/my-feature/ui
-touch src/features/my-feature/ui/my-feature.tsx
-touch src/features/my-feature/index.ts
-```
-
-### Новый widget
-
-```bash
-mkdir -p src/widgets/my-widget/ui
-touch src/widgets/my-widget/ui/my-widget.tsx
-touch src/widgets/my-widget/index.ts
-```
-
-## 🎨 UI компоненты
-
-Все базовые UI компоненты находятся в `src/shared/ui` и построены на базе:
-
-- **Radix UI** - доступные headless компоненты
-- **Tailwind CSS** - кастомизируемые стили
-- **shadcn/ui** - готовые паттерны
 
 ## 📦 Скрипты
 
+| Команда | Описание |
+|---------|----------|
+| `npm run dev` | Development сервер с Turbopack |
+| `npm run build` | Production сборка |
+| `npm run start` | Запуск production сервера |
+| `npm run lint` | ESLint проверка |
+| `npm run test` | Запуск тестов |
+
+## 🐳 Docker
+
+### Готовый образ из GHCR
+
+CI/CD пайплайн автоматически собирает и публикует образ в GitHub Container Registry:
+
 ```bash
-npm run dev        # Запуск development сервера с Turbopack
-npm run build      # Production сборка
-npm run start      # Запуск production сервера
-npm run lint       # ESLint проверка
+# Pull образа
+docker pull ghcr.io/oglenyaboss/project-frontend:latest
+
+# Запуск контейнера
+docker run -p 3000:3000 ghcr.io/oglenyaboss/project-frontend:latest
 ```
 
-## 🔗 Полезные ссылки
+### Локальная сборка
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Feature-Sliced Design](https://feature-sliced.design/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Radix UI](https://www.radix-ui.com/)
+```bash
+# Сборка образа
+docker build -t cjm-frontend \
+  --build-arg NEXT_PUBLIC_API_URL=https://api.example.com \
+  --build-arg NEXT_PUBLIC_WS_URL=wss://api.example.com/ws .
 
-## 📄 Лицензия
+# Запуск контейнера
+docker run -p 3000:3000 cjm-frontend
+```
 
-Этот проект создан с использованием [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 📚 Документация
+
+Подробная документация находится в директории [`docs/`](./docs/):
+
+- [**PROJECT-DOCUMENTATION.md**](./docs/PROJECT-DOCUMENTATION.md) — Полная техническая документация
+- [**API-INTEGRATION.md**](./docs/API-INTEGRATION.md) — Интеграция с бэкендом
+
+## ⚙️ Environment Variables
+
+```env
+NEXT_PUBLIC_API_URL=https://api.example.com
+NEXT_PUBLIC_WS_URL=wss://api.example.com/ws
+```
+
+Пример конфигурации: [`.env.example`](./.env.example)
