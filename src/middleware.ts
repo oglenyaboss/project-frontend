@@ -30,10 +30,11 @@ export function middleware(request: NextRequest) {
   }
 
   // Если не авторизован и не на публичной странице → login
-  if (
-    !accessToken &&
-    !PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
-  ) {
+  const isPublicRoute =
+    pathname === "/" ||
+    PUBLIC_ROUTES.some((route) => route !== "/" && pathname.startsWith(route));
+
+  if (!accessToken && !isPublicRoute) {
     const loginUrl = new URL("/login", request.url);
     // Сохраняем URL для редиректа после логина
     loginUrl.searchParams.set("callbackUrl", pathname);
@@ -41,11 +42,21 @@ export function middleware(request: NextRequest) {
   }
 
   // Если авторизован и на auth странице → dashboard
-  if (accessToken && AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+  const response =
+    accessToken && AUTH_ROUTES.some((route) => pathname.startsWith(route))
+      ? NextResponse.redirect(new URL("/dashboard", request.url))
+      : NextResponse.next();
 
-  return NextResponse.next();
+  // Security Headers
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' ws: wss: http: https:;",
+  );
+
+  return response;
 }
 
 export const config = {

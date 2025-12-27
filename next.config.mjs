@@ -1,5 +1,12 @@
+import bundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig = {
-  assetPrefix: "/exp2-static",
+  output: "standalone",
+  assetPrefix: "/exp2-static", // User kept this in original, assuming it's needed
   transpilePackages: ["@workspace/ui"],
   images: {
     remotePatterns: [
@@ -7,8 +14,8 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
       },
-    ],    
-  },  
+    ],
+  },
 }
 
-export default nextConfig
+export default withBundleAnalyzer(nextConfig);

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().url().default("http://localhost:8080"),
-  NEXT_PUBLIC_WS_URL: z.string().url().default("ws://localhost:8000/ws"),
+  NEXT_PUBLIC_API_URL: z.string().url(),
+  NEXT_PUBLIC_WS_URL: z.string().url(),
   // Optional backend URL for Docker environments
   BACKEND_API_URL: z.string().url().optional(),
 });
