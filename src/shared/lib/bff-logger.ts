@@ -77,7 +77,7 @@ function formatBody(body: unknown): string {
     if (body instanceof FormData) {
       const entries: string[] = [];
       body.forEach((value, key) => {
-        if (value instanceof File) {
+        if (typeof File !== "undefined" && value instanceof File) {
           entries.push(`  ${key}: [File: ${value.name}, ${value.size} bytes]`);
         } else {
           entries.push(`  ${key}: ${truncate(String(value), 100)}`);

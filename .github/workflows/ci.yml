@@ -1,4 +1,4 @@
-name: Frontend CI
+name: CI/CD
 
 on:
   push:
@@ -6,21 +6,24 @@ on:
   pull_request:
     branches: [ "main", "master" ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  build:
+  quality:
+    name: Quality Check
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-
+    permissions:
+      contents: read
+    
     steps:
     - uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js 20
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 20
         cache: 'npm'
 
     - name: Install dependencies
@@ -29,13 +32,50 @@ jobs:
     - name: Lint
       run: npm run lint
 
-    # We need to build to check types and Next.js validity
-    # We skip type-checking in 'lint' usually so 'build' is the place for it
-    - name: Build
+    - name: Test
+      run: npm run test
+
+    - name: Build Application
       run: npm run build
       env:
-         # Skip type checking during build might be default in some setups, 
-         # but usually it runs. 
-         # Providing dummy env vars if build fails due to missing ones
-         NEXT_PUBLIC_API_URL: "http://localhost:8080" 
+         NEXT_PUBLIC_API_URL: "http://localhost:8080"
          NEXT_PUBLIC_WS_URL: "ws://localhost:8080"
+
+  publish:
+    name: Publish to GHCR
+    needs: quality
+    # Only run on push to main/master, not on PRs
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
