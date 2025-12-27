@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 /**
  * Публичные роуты — доступны без авторизации
  */
-const PUBLIC_ROUTES = ["/login", "/register"];
+const PUBLIC_ROUTES = ["/login", "/register", "/"];
 
 /**
  * Auth роуты — редирект на dashboard если уже залогинен

@@ -12,54 +12,21 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { Button, ThemeToggle } from "@/shared/ui";
+import {
+  Button,
+  ThemeToggle,
+  Counter,
+  TiltCard,
+  Magnetic,
+  BentoGrid,
+  BentoGridItem,
+} from "@/shared/ui";
 import { cn } from "@/shared/lib";
+import { BackgroundBeams } from "@/shared/ui/grid-pattern";
+import { Hero3D } from "@/widgets/landing/hero-3d";
+import { AppShowcase } from "@/widgets/landing/app-showcase";
 
-const features = [
-  {
-    icon: FileText,
-    title: "Анализ интервью",
-    description:
-      "Автоматическое извлечение бизнес-требований из текстов и аудиозаписей",
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-  },
-  {
-    icon: BrainCircuit,
-    title: "AI Структурирование",
-    description: "Превращение хаотичных заметок в четкую структуру требований",
-    color: "text-warning",
-    bgColor: "bg-warning/10",
-  },
-  {
-    icon: BarChart3,
-    title: "Шаблоны документов",
-    description: "Готовые шаблоны для формирования ТЗ и спецификаций",
-    color: "text-info",
-    bgColor: "bg-info/10",
-  },
-  {
-    icon: Users,
-    title: "Командная работа",
-    description: "Совместное редактирование и согласование требований",
-    color: "text-chart-4",
-    bgColor: "bg-chart-4/10",
-  },
-  {
-    icon: Shield,
-    title: "Безопасность",
-    description: "Защищенное хранение конфиденциальных данных проекта",
-    color: "text-success",
-    bgColor: "bg-success/10",
-  },
-  {
-    icon: Clock,
-    title: "Ускорение работы",
-    description: "Сокращение времени на аналитику в 5-10 раз",
-    color: "text-chart-5",
-    bgColor: "bg-chart-5/10",
-  },
-];
+// ... existing imports ...
 
 const stats = [
   { value: "5000+", label: "Требований создано" },
@@ -68,14 +35,75 @@ const stats = [
   { value: "5x", label: "Быстрее создание ТЗ" },
 ];
 
+const features = [
+  {
+    title: "AI-Анализ интервью",
+    description: "Автоматическое извлечение требований из записей встреч",
+    icon: BrainCircuit,
+    color: "text-purple-500",
+    bgColor: "bg-purple-100 dark:bg-purple-900/20",
+  },
+  {
+    title: "Умные шаблоны",
+    description: "Готовые структуры ТЗ по ГОСТ и ISO стандартам",
+    icon: FileText,
+    color: "text-blue-500",
+    bgColor: "bg-blue-100 dark:bg-blue-900/20",
+  },
+  {
+    title: "Версионность",
+    description: "Полная история изменений требований",
+    icon: Clock,
+    color: "text-orange-500",
+    bgColor: "bg-orange-100 dark:bg-orange-900/20",
+  },
+  {
+    title: "Командная работа",
+    description: "Совместное редактирование в реальном времени",
+    icon: Users,
+    color: "text-green-500",
+    bgColor: "bg-green-100 dark:bg-green-900/20",
+  },
+  {
+    title: "Безопасность",
+    description: "Шифрование данных и ролевая модель доступа",
+    icon: Shield,
+    color: "text-red-500",
+    bgColor: "bg-red-100 dark:bg-red-900/20",
+  },
+  {
+    title: "Аналитика",
+    description: "Дашборды по статусам и метрикам требований",
+    icon: BarChart3,
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-100 dark:bg-indigo-900/20",
+  },
+  {
+    title: "Интеграции",
+    description: "Синхронизация с Jira, Confluence и GitLab",
+    icon: BarChart3,
+    color: "text-teal-500",
+    bgColor: "bg-teal-100 dark:bg-teal-900/20",
+  },
+];
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
+      {/* Combined 3D Background Layer */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <BackgroundBeams />
+        <div className="absolute inset-0 opacity-40">
+          <Hero3D />
+        </div>
+      </div>
+
       {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b transition-all duration-300">
+      <header className="sticky top-0 z-50 glass border-b transition-all duration-300 bg-background/60 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl gradient-sber flex items-center justify-center shadow-sber hover:scale-105 transition-transform duration-300">
+              {/* Logo SVG */}
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -107,8 +135,7 @@ export default function Home() {
               className="shadow-sber hover:shadow-sber-lg transition-all duration-300"
             >
               <Link href="/register">
-                Начать бесплатно
-                <ArrowRight className="ml-1 h-4 w-4" />
+                Начать бесплатно <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -116,60 +143,76 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-background via-accent/30 to-background">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMUEwMzgiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDE0di0yaDIyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+      <section className="relative pt-20 pb-32 sm:pt-32 sm:pb-40 overflow-hidden">
+        <div className="container relative z-10 px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border bg-white/80 dark:bg-black/40 backdrop-blur-sm px-4 py-1.5 text-sm text-foreground/80 shadow-sm mb-8 hover:bg-white/90 dark:hover:bg-black/60 transition-colors cursor-default animate-fade-in-up">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Новое: Интеллектуальный анализ бизнес-требований
+          </div>
 
-        <div className="container relative px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="inline-flex items-center gap-2 rounded-full border bg-white/80 backdrop-blur-sm px-4 py-1.5 text-sm text-foreground/80 shadow-sm mb-8 hover:bg-white transition-colors cursor-default">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Новое: Интеллектуальный анализ бизнес-требований
-            </div>
+          <h1
+            className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight mb-8 leading-[1.1] animate-fade-in-up"
+            style={{ animationDelay: "100ms" }}
+          >
+            <span className="block text-foreground drop-shadow-sm">
+              Веб-сервис для
+            </span>
+            <span className="gradient-sber-text drop-shadow-lg">
+              анализа требований
+            </span>
+          </h1>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight mb-8 leading-tight">
-              Веб-сервис для работы с{" "}
-              <span className="gradient-sber-text">
-                интервью и бизнес-требованиями
-              </span>
-            </h1>
+          <p
+            className="text-xl sm:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up"
+            style={{ animationDelay: "200ms" }}
+          >
+            Превращайте хаос интервью в структурные спецификации.
+            <br className="hidden sm:block" />
+            ИИ-ассистент, который понимает контекст вашего бизнеса.
+          </p>
 
-            <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-              Превращайте записи интервью в структурированные бизнес-требования,
-              технические задания и спецификации с помощью искусственного
-              интеллекта.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up"
+            style={{ animationDelay: "300ms" }}
+          >
+            <Magnetic>
               <Button
                 size="lg"
                 asChild
-                className="w-full sm:w-auto h-12 px-8 text-base shadow-sber-lg hover:shadow-sber hover:-translate-y-0.5 transition-all duration-300"
+                className="w-full sm:w-auto h-14 px-10 text-lg shadow-sber-lg hover:shadow-sber hover:-translate-y-1 transition-all duration-300 rounded-full"
               >
-                <Link href="/register">
+                <Link href="/login">
                   Начать работу
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
+            </Magnetic>
+            <Magnetic>
               <Button
                 size="lg"
                 variant="outline"
                 asChild
-                className="w-full sm:w-auto h-12 px-8 text-base bg-white/50 hover:bg-white hover:-translate-y-0.5 transition-all duration-300"
+                className="w-full sm:w-auto h-14 px-10 text-lg bg-background/50 backdrop-blur hover:bg-background hover:-translate-y-1 transition-all duration-300 rounded-full border-primary/20"
               >
-                <Link href="/login">
-                  Войти в систему
+                <Link href="/register">
+                  Попробовать
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
-            </div>
+            </Magnetic>
           </div>
         </div>
 
-        {/* Decorative gradient */}
-        <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        {/* 3D Mockup Showcase */}
+        <div
+          className="relative z-10 mt-16 animate-fade-in-up"
+          style={{ animationDelay: "500ms" }}
+        >
+          <AppShowcase />
+        </div>
       </section>
 
       {/* Stats Section */}
@@ -183,7 +226,10 @@ export default function Home() {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <p className="text-4xl sm:text-5xl font-bold gradient-sber-text mb-2 tracking-tight">
-                  {stat.value}
+                  <Counter
+                    value={parseInt(stat.value)}
+                    suffix={stat.value.replace(/[\d]/g, "")}
+                  />
                 </p>
                 <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   {stat.label}
@@ -206,26 +252,51 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:hidden gap-6">
             {features.map((feature, index) => (
-              <div
+              <TiltCard
                 key={index}
-                className="group rounded-3xl border bg-card p-8 shadow-premium hover:shadow-premium-lg transition-all duration-300 hover:-translate-y-1"
+                className="group rounded-3xl border bg-card p-6 shadow-premium"
               >
                 <div
                   className={cn(
-                    "w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110",
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4",
                     feature.bgColor,
                   )}
                 >
-                  <feature.icon className={cn("w-7 h-7", feature.color)} />
+                  <feature.icon className={cn("w-6 h-6", feature.color)} />
                 </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">
                   {feature.description}
                 </p>
-              </div>
+              </TiltCard>
             ))}
+          </div>
+
+          <div className="hidden md:block">
+            <BentoGrid className="max-w-6xl mx-auto">
+              {features.map((feature, index) => (
+                <BentoGridItem
+                  key={index}
+                  title={feature.title}
+                  description={feature.description}
+                  header={
+                    <div
+                      className={cn(
+                        "flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 to-neutral-100 dark:to-neutral-800 items-center justify-center",
+                        feature.bgColor,
+                      )}
+                    >
+                      <feature.icon
+                        className={cn("w-12 h-12 opacity-50", feature.color)}
+                      />
+                    </div>
+                  }
+                  className={index === 3 || index === 6 ? "md:col-span-2" : ""}
+                />
+              ))}
+            </BentoGrid>
           </div>
         </div>
       </section>

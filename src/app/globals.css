@@ -57,6 +57,7 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --animate-scroll: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
 }
 
 :root {
@@ -257,19 +258,15 @@
   }
 
   .gradient-sber {
-    background: linear-gradient(
-      135deg,
-      var(--sber-gradient-start) 0%,
-      var(--sber-gradient-end) 100%
-    );
+    background: linear-gradient(135deg,
+        var(--sber-gradient-start) 0%,
+        var(--sber-gradient-end) 100%);
   }
 
   .gradient-sber-text {
-    background: linear-gradient(
-      135deg,
-      var(--sber-gradient-start) 0%,
-      var(--sber-gradient-end) 100%
-    );
+    background: linear-gradient(135deg,
+        var(--sber-gradient-start) 0%,
+        var(--sber-gradient-end) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -308,6 +305,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -318,6 +316,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -329,8 +328,15 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes scroll {
+  to {
+    transform: translate(calc(-50% - 0.5rem));
   }
 }

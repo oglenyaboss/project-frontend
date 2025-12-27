@@ -67,15 +67,17 @@ export function AgentDialogue({
     // Only scroll if new items were added AND user hasn't scrolled up
     if (newLength > prevLength && !userHasScrolledRef.current) {
       if (scrollRef.current) {
-        const scrollContainer = scrollRef.current.querySelector(
-          "[data-radix-scroll-area-viewport]",
-        );
-        if (scrollContainer) {
-          scrollContainer.scrollTo({
-            top: scrollContainer.scrollHeight,
-            behavior: "smooth",
-          });
-        }
+        setTimeout(() => {
+          const scrollContainer = scrollRef.current?.querySelector(
+            "[data-radix-scroll-area-viewport]",
+          );
+          if (scrollContainer) {
+            scrollContainer.scrollTo({
+              top: scrollContainer.scrollHeight,
+              behavior: "smooth",
+            });
+          }
+        }, 100);
       }
     }
 

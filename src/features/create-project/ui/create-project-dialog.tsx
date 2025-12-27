@@ -2,9 +2,19 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Loader2, FolderPlus, Upload, X, FileText } from "lucide-react";
+import {
+  Loader2,
+  FolderPlus,
+  Upload,
+  X,
+  FileText,
+  Check,
+  AlertCircle,
+} from "lucide-react";
 import { useState, useRef } from "react";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/shared/lib";
 
 import {
   Button,
@@ -82,7 +92,7 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
           form.reset();
           setFiles([]);
         },
-      }
+      },
     );
   }
 
@@ -148,11 +158,54 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
                       Название проекта
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Например: UX исследование"
-                        className="h-12"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <motion.div
+                          animate={
+                            form.formState.errors.title
+                              ? { x: [0, -10, 10, -10, 10, 0] }
+                              : {}
+                          }
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20,
+                          }}
+                        >
+                          <Input
+                            placeholder="Например: UX исследование"
+                            className={cn(
+                              "h-12",
+                              !form.formState.errors.title &&
+                                field.value.length > 3 &&
+                                "border-green-500 focus-visible:ring-green-500",
+                            )}
+                            {...field}
+                          />
+                        </motion.div>
+                        <AnimatePresence>
+                          {!form.formState.errors.title &&
+                            field.value.length > 3 && (
+                              <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                className="absolute right-3 top-3 text-green-500 pointer-events-none"
+                              >
+                                <Check className="w-5 h-5" />
+                              </motion.div>
+                            )}
+                          {form.formState.errors.title && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute right-3 top-3 text-destructive pointer-events-none"
+                            >
+                              <AlertCircle className="w-5 h-5" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -183,7 +236,9 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
               {/* Files Upload Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-sm font-medium">Файлы проекта</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Файлы проекта
+                  </FormLabel>
                   <Button
                     type="button"
                     variant="outline"
@@ -234,9 +289,20 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed p-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Файлы не выбраны. Вы можете загрузить их сейчас или добавить позже.
+                  <div
+                    className="rounded-xl border border-dashed p-6 text-center group hover:bg-muted/30 transition-colors cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className="flex justify-center mb-3">
+                      <div className="p-3 bg-primary/10 rounded-full group-hover:scale-110 transition-transform duration-300">
+                        <Upload className="w-6 h-6 text-primary" />
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      Перетащите файлы сюда
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      или нажмите для выбора (PDF, MD, DOCX, TXT)
                     </p>
                   </div>
                 )}

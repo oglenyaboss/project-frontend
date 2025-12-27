@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { Providers } from "./providers";
 import "./globals.css";
+import { FloatingActionBar } from "@/widgets/layout/ui/floating-action-bar";
 
 const fontSans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -32,7 +33,10 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <FloatingActionBar />
+        </Providers>
       </body>
     </html>
   );

@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -30,7 +30,42 @@ export function ThemeToggle({ className }: { className?: string }) {
           : "bg-sky-100 border border-sky-200 justify-start",
         className,
       )}
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onClick={(e) => {
+        const newTheme = isDark ? "light" : "dark";
+        if (
+          !document.startViewTransition ||
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
+          setTheme(newTheme);
+          return;
+        }
+
+        const transition = document.startViewTransition(() => {
+          setTheme(newTheme);
+        });
+
+        const x = e.clientX;
+        const y = e.clientY;
+        const right = window.innerWidth - x;
+        const bottom = window.innerHeight - y;
+        const maxRadius = Math.hypot(Math.max(x, right), Math.max(y, bottom));
+
+        transition.ready.then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${maxRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 500,
+              easing: "ease-in-out",
+              pseudoElement: "::view-transition-new(root)",
+            },
+          );
+        });
+      }}
     >
       <motion.div
         className={cn(
