@@ -201,7 +201,7 @@ export function useAgentSession(
           optionsRef.current.onError?.("Connection error");
         };
 
-        ws.onclose = (_event) => {
+        ws.onclose = () => {
           isConnectingRef.current = false;
           setIsConnected(false);
           // console.log(`[WS] Disconnected from session ${sessionId}, code: ${event.code}`);

@@ -118,7 +118,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
-        } catch (error) {
+        } catch {
           set({
             user: null,
             isAuthenticated: false,
@@ -139,6 +139,6 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         user: state.user,
       }),
-    }
-  )
+    },
+  ),
 );

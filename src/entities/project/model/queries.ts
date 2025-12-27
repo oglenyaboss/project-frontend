@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { queryKeys, type PaginationParams } from "@/shared/api";
-import type { Project, ProjectCreateRequest } from "@/shared/lib/schemas";
+import type { ProjectCreateRequest } from "@/shared/lib/schemas";
 
 import {
   getProjects,
@@ -57,7 +57,7 @@ export function useCreateProject() {
 
   return useMutation({
     mutationFn: (
-      data: Omit<ProjectCreateRequest, "files"> & { files?: File[] }
+      data: Omit<ProjectCreateRequest, "files"> & { files?: File[] },
     ) => createProject(data),
     onSuccess: () => {
       // Инвалидируем список проектов

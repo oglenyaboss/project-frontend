@@ -9,14 +9,13 @@ import type {
   Project,
   ProjectsList,
   ProjectCreateRequest,
-  ProjectUpdateRequest,
 } from "@/shared/lib/schemas";
 
 /**
  * Получить список проектов
  */
 export async function getProjects(
-  params?: PaginationParams
+  params?: PaginationParams,
 ): Promise<ProjectsList> {
   const searchParams = new URLSearchParams();
 
@@ -41,7 +40,7 @@ export async function getProject(id: number): Promise<Project> {
  * Создать проект (multipart/form-data)
  */
 export async function createProject(
-  data: Omit<ProjectCreateRequest, "files"> & { files?: File[] }
+  data: Omit<ProjectCreateRequest, "files"> & { files?: File[] },
 ): Promise<Project> {
   const formData = new FormData();
   formData.append("title", data.title);
@@ -66,7 +65,7 @@ export async function createProject(
  */
 export async function addFilesToProject(
   id: number,
-  files: File[]
+  files: File[],
 ): Promise<Project> {
   const formData = new FormData();
   files.forEach((file) => {
@@ -80,7 +79,7 @@ export async function addFilesToProject(
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 }
